@@ -43,7 +43,7 @@ For containerized environments:
 - **CUDA GPU components** (requires NVIDIA GPU):
   ```bash
   docker build -f Dockerfile.cuda -t thread-cuda .
-  docker run --rm --gpus all -v /path/to/tiles:/app/tiles thread-cuda ./cloud_gpu/upscaler tiles/input_tile.jpg tiles/output_tile.jpg
+  docker run --rm --gpus all -v /path/to/tiles:/app/tiles thread-cuda ./src/gpu/cuda/upscaler tiles/input_tile.jpg tiles/output_tile.jpg
   ```
 
 **Manual Setup**
@@ -80,7 +80,7 @@ pip install -r requirements.txt
 
 ```bash
 # On cloud instance with CUDA
-cd cloud_gpu
+cd src/gpu/cuda
 nvcc upscale.cu -o upscaler -I/usr/include/opencv4 -lopencv_core -lopencv_imgcodecs
 ```
 
@@ -100,13 +100,13 @@ To run unit tests (parallel execution enabled for faster runs):
 
 ```bash
 # Python tests (parallel with pytest-xdist)
-python3 -m pytest tests/
+python3 -m pytest src
 # C/C++ tests (parallel with ctest)
 cd build && ctest -j$(nproc)
 # Run benchmark test specifically (verbose output, tests Metal shim performance)
 cd build && ctest -R user_counters_tabular_test -V
 # End-to-end tests
-python3 scripts/e2e.py
+python3 src/cli/e2e.py
 ```
 
 **Manual Usage**
@@ -130,7 +130,7 @@ python3 scripts/e2e.py
 3. **Upscale tiles on cloud**:
    ```bash
    # Single tile
-   cd cloud_gpu && ./upscaler input_tile.jpg output_tile.jpg 2
+   cd src/gpu/cuda && ./upscaler input_tile.jpg output_tile.jpg 2
 
    # Batch process all tiles
    ./scripts/batch_upscale.sh tiles upscaled 2 "*.jpg"
@@ -138,21 +138,21 @@ python3 scripts/e2e.py
 4. **Stitch upscaled tiles** with flexible grid dimensions:
    ```bash
    # Auto-detect square grid
-   python3 scripts/stitch.py path/to/upscaled_tiles/ output_image.jpg
+   python3 src/cli/stitch.py path/to/upscaled_tiles/ output_image.jpg
 
    # Specify custom grid dimensions
-   python3 scripts/stitch.py path/to/upscaled_tiles/ output_image.jpg --rows 2 --cols 8
+   python3 src/cli/stitch.py path/to/upscaled_tiles/ output_image.jpg --rows 2 --cols 8
 
    # Use custom file pattern
-   python3 scripts/stitch.py path/to/upscaled_tiles/ output_image.jpg --pattern "upscaled_*.png"
+   python3 src/cli/stitch.py path/to/upscaled_tiles/ output_image.jpg --pattern "upscaled_*.png"
    ```
 
 **Verification**
 To ensure the project components work correctly:
 
 - **CUDA Build Check**: Run `scripts/check_cuda_build.sh` on a CUDA-enabled system to verify `upscale.cu` compiles without errors.
-- **Local E2E Testing**: The `scripts/run.sh` script simulates the full pipeline (tiling -> copy tiles -> stitching) without actual upscaling or GPU hardware. `scripts/e2e.py` provides additional end-to-end validation.
-- **Code Review**: Manually inspect `cloud_gpu/upscale.cu` for CUDA best practices and logic correctness.
+- **Local E2E Testing**: The `scripts/run.sh` script simulates the full pipeline (tiling -> copy tiles -> stitching) without actual upscaling or GPU hardware. `src/cli/e2e.py` provides additional end-to-end validation.
+- **Code Review**: Manually inspect `src/gpu/cuda/upscale.cu` for CUDA best practices and logic correctness.
 - **Troubleshooting**: If you encounter build or test issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)[^4] for common problems and solutions.
 
 **Git Commit Standards**

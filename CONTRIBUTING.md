@@ -49,7 +49,7 @@ Examples:
 
 ## Testing
 
-- Run unit tests: `python -m pytest tests/`
+- Run unit tests: `python -m pytest src`
 - Run C/C++ tests: `cd build && ctest`
 - Ensure all CI checks pass
 

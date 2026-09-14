@@ -77,15 +77,17 @@ Every tool has its drawer. Nothing hidden.
 
 | Path | Use: what lives there |
 | :--- | :--- |
-| `api/server.py` | Flask API: uploads, tiles, upscale, stitch, HAL responses |
+| `src/api/server.py` | Flask API: uploads, tiles, upscale, stitch, HAL responses |
 | `src/preprocess.c` | `stb_image` tiler: no OpenCV needed, always builds |
 | `src/preprocess.cpp` | OpenCV path: when you want it |
 | `src/upscaler.cpp` | Upscaler factory: chooses Metal to CUDA to error, with grace |
-| `src/metal/` | Metal on macOS: `MetalShim.mm`, `MetalUpscaler.cpp`, `Upscale.metal` |
-| `cloud_gpu/` | CUDA on Linux/Windows: `upscale.cu`, `filters.cu`, `resize.cu` + 9 more |
-| `include/` | Headers: `upscaler.hpp`, `cuda_shim.h`, `stb_image.h` |
-| `scripts/` | `setup.sh`, `e2e.py`, `stitch.py`, `run.sh`: the hands |
-| `tests/` | C and Python: `test_preprocess.c`, `test_api_server.py`, `test_stitch.py` |
+| `src/gpu/metal/` | Metal on macOS: `MetalShim.mm`, `MetalUpscaler.cpp`, `Upscale.metal` |
+| `src/gpu/cuda/` | CUDA on Linux/Windows: `upscale.cu`, `filters.cu`, `resize.cu` + 9 more |
+| `src/core/include/` | Headers: `upscaler.hpp`, `cuda_shim.h`, `stb_image.h` |
+| `scripts/` | Shell hands: `setup.sh`, `run.sh`, `commit.sh`, CI helpers |
+| `src/cli/` | Python hands: `e2e.py`, `stitch.py`, `create_test_image.py` |
+| `src/core/` | C and C++ sources with their tests: `preprocess.c`, `test_preprocess.c` |
+| `src/api/` | Flask API with its test: `server.py`, `test_api_server.py` |
 | `docs/` | Notes and site: Onboarding, Compatibility, CI, Troubleshooting |
 | `CMakeLists.txt` | Build: Metal OFF by default, CUDA OFF by default, as it should be |
 
@@ -172,7 +174,7 @@ Covers `test_api_server.py`, `test_stitch.py`, `test_create_test_image.py` and t
 ### 4: See the whole flow, end to end
 
 ```bash
-python scripts/e2e.py
+python src/cli/e2e.py
 ```
 
 It will: create a test image → run `build/bin/preprocess_c` (16 tiles) → upscale each tile to `128×128` (using `build/bin/upscale` if built, else `cv2` fallback) → stitch to `test_images/final_output.jpg` (`512×512`) → verify and print *“E2E test passed”*.
@@ -180,7 +182,7 @@ It will: create a test image → run `build/bin/preprocess_c` (16 tiles) → ups
 ### 5: Start the API
 
 ```bash
-python api/server.py
+python src/api/server.py
 # → http://localhost:5001
 #   health:  http://localhost:5001/v1/health  (and /health)
 ```
@@ -357,7 +359,7 @@ cmake --build build --parallel
 #              histogram, morphology, median, sharpen, threshold, canny, blend
 ```
 
-CUDA executables live in `build/bin/`. The factory prefers Metal when present; otherwise CUDA if `isCudaAvailable()` (`cudaGetDeviceCount > 0`); otherwise it raises gently, and the CPU fallback in `api/server.py` continues.
+CUDA executables live in `build/bin/`. The factory prefers Metal when present; otherwise CUDA if `isCudaAvailable()` (`cudaGetDeviceCount > 0`); otherwise it raises gently, and the CPU fallback in `src/api/server.py` continues.
 
 *Do not set both to `ON` on the same machine unless you know why. The default keeps both `OFF`.*
 
@@ -371,7 +373,7 @@ We treat checks as part of the work, not an afterthought.
 | :--- | :--- | :--- |
 | C tests (`ctest`) | **Active** | `ctest --test-dir build --output-on-failure` |
 | Python tests (`pytest`) | **Active** | `python -m pytest` / `python -m pytest --cov` |
-| E2E flow | **Active** | `python scripts/e2e.py` |
+| E2E flow | **Active** | `python src/cli/e2e.py` |
 | Pre-commit (black, isort, ruff, yamllint) | **Active** | `pre-commit run --all-files` |
 | Build (macOS / Linux / Windows) | **Active** | GitHub Actions + CircleCI |
 | Release check | **Active** | `scripts/validate_release_config.sh` |

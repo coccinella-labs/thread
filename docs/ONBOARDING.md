@@ -30,9 +30,9 @@ Thread consists of:
 
 * `CMakeLists.txt`: Build configuration
 * `src/preprocess.c`: CPU image preprocessing
-* `cloud_gpu/upscale.cu`: CUDA upscaling
-* `src/metal/Upscale.metal`: Metal shader implementation
-* `scripts/e2e.py`: End-to-end testing logic
+* `src/gpu/cuda/upscale.cu`: CUDA upscaling
+* `src/gpu/metal/Upscale.metal`: Metal shader implementation
+* `src/cli/e2e.py`: End-to-end testing logic
 
 #### 5. Testing Requirements
 
