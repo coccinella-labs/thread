@@ -68,7 +68,7 @@
 <body>
     <nav>
         <div class="container">
-            <a href="index.html" class="nav-brand">Thread</a>
+            <a href="index.html" class="nav-brand"><img src="https://avatars.githubusercontent.com/u/283287531?s=64" alt="Coccinella Labs" style="width:20px;height:20px;border-radius:4px;vertical-align:-4px;margin-right:8px;" />Thread</a>
             <div class="nav-links">
                 <a href="api-design.html">API Design</a>
                 <a href="testing.html">Testing</a>
@@ -92,7 +92,7 @@
             <h3>2. Architecture Overview</h3>
             <ul>
                 <li><strong>Local CPU Processing:</strong> Image tiling and stitching using C/C++ with OpenCV or stb_image</li>
-                <li><strong>GPU Acceleration:</strong> CUDA (Linux/Windows) or Metal (macOS) for upscaling</li>
+                <li><strong>GPU Acceleration (Experimental):</strong> CUDA (Linux/Windows) or Metal (macOS). GPU code is not used by the API; the API always upscales on the CPU.</li>
                 <li><strong>Python Orchestration:</strong> Pipeline coordination and testing</li>
             </ul>
 
@@ -108,10 +108,10 @@
             <h3>4. Important Files</h3>
             <ul>
                 <li><code>CMakeLists.txt</code>: Build configuration</li>
-                <li><code>src/preprocess.c</code>: CPU image preprocessing</li>
-                <li><code>cloud_gpu/upscale.cu</code>: CUDA upscaling</li>
-                <li><code>src/metal/Upscale.metal</code>: Metal shader</li>
-                <li><code>scripts/e2e.py</code>: End-to-end testing</li>
+                <li><code>src/core/preprocess.c</code>: CPU image preprocessing</li>
+                <li><code>src/gpu/cuda/upscale.cu</code>: CUDA upscaling</li>
+                <li><code>src/gpu/metal/Upscale.metal</code>: Metal shader</li>
+                <li><code>src/cli/e2e.py</code>: End-to-end testing</li>
             </ul>
 
             <h3>5. Testing Requirements</h3>
@@ -137,10 +137,10 @@
                 BSD 3-Clause License
             </p>
             <div>
-                <a href="https://github.com/bniladridas/thread/discussions">Discussions</a>
+                <a href="https://github.com/coccinella-labs/thread/discussions">Discussions</a>
                 <a href="privacy.html">Privacy</a>
                 <a href="terms.html">Terms</a>
-                <a href="https://github.com/bniladridas/thread">GitHub</a>
+                <a href="https://github.com/coccinella-labs/thread">GitHub</a>
             </div>
         </div>
     </footer>

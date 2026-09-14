@@ -5,10 +5,6 @@
 # Include only source directories
 paths:
   - src/
-  - cloud_gpu/
-  - include/
-  - tests/unit/
-  - tests/performance/
 
 # Exclude common non-source directories
 paths-ignore:

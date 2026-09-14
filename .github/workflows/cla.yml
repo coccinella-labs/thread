@@ -8,7 +8,7 @@ on:
 jobs:
   cla:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'bniladridas'
+    if: github.repository_owner == 'coccinella-labs'
     permissions:
       contents: read
     steps:
@@ -17,20 +17,18 @@ jobs:
           sparse-checkout: |
             signed.json
 
-      - name: Checkout private cla-bot
+      - name: Checkout cla-bot
         uses: actions/checkout@v7
         with:
-          repository: bniladridas/cla-bot
+          repository: coccinella-labs/clabot
           token: ${{ secrets.CLA_BOT_TOKEN }}
           path: cla-bot
 
       - name: Copy signed.json to cla-signers.json
         run: |
           cp signed.json cla-signers.json
-          cp signed.json cla-bot/cla-signers.json
 
       - name: Run CLA bot
         uses: ./cla-bot/
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          signed.json: ${{ secrets.CLA_SIGNED_JSON }}

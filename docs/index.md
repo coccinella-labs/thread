@@ -1,6 +1,6 @@
 # Thread
 
-Thread splits images into tiles, upscales them, and stitches them back together. Start with the CPU path. Use CUDA or Metal only when your machine is ready for it.
+Thread splits images into tiles, upscales them, and stitches them back together. Start with the CPU path. CUDA and Metal support is experimental. The API always uses CPU. GPU kernels are available in the standalone CLI if built separately.
 
 ## Quick Start
 

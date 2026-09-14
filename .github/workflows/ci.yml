@@ -188,8 +188,8 @@ jobs:
 
       - name: Test Python scripts
         run: |
-          python create_test_image.py
-          python scripts/stitch.py --help || true  # Test script execution
+          python src/cli/create_test_image.py
+          python src/cli/stitch.py --help || true  # Test script execution
 
   # ────────────────────────────── Build & Test ──────────────────────────────
   test-and-build:
@@ -333,7 +333,7 @@ jobs:
           cmake --build . -- -j2 VERBOSE=1
 
       - name: Run E2E tests
-        run: python scripts/e2e.py
+        run: python src/cli/e2e.py
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
@@ -386,8 +386,11 @@ jobs:
       - name: Run tests
         run: |
           cd build
-          # Run tests with limited parallelism
-          ctest --output-on-failure --timeout 300 --parallel 2
+          # Run tests with limited parallelism. user_counters_tabular_test is a
+          # Google Benchmark self-test whose CV regex expects a real clock rate;
+          # macOS runners lack sysctl hw.cpufrequency, so it prints "nan %" and
+          # fails its own output check. Skipped here (passes on Linux CI).
+          ctest --output-on-failure --timeout 300 --parallel 2 -E user_counters_tabular_test
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
@@ -634,7 +637,7 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           mkdir -p test_images
-          python3 create_test_image.py
+          python3 src/cli/create_test_image.py
           cp test_images/test.jpg test_images/input.jpg
 
            GPU="${{ matrix.cuda-version != '' && 'true' || 'false' }}"

@@ -26,7 +26,7 @@ mkdir -p "$OUTPUT_DIR"
 
 if [ ! -f "$UPSCALER" ]; then
     echo "Error: Upscaler binary '$UPSCALER' not found"
-    echo "Build it first with: nvcc cloud_gpu/upscale.cu -o upscaler -I/usr/local/include/opencv4 -L/usr/local/lib -lopencv_core -lopencv_imgcodecs -lopencv_imgproc -lopencv_highgui -std=c++17"
+    echo "Build it first with: nvcc src/gpu/cuda/upscale.cu -o upscaler -I/usr/local/include/opencv4 -L/usr/local/lib -lopencv_core -lopencv_imgcodecs -lopencv_imgproc -lopencv_highgui -std=c++17"
     exit 1
 fi
 
