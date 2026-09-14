@@ -171,9 +171,8 @@ Kept, with reasons:
 - `signed.json`, `Dockerfile.cuda`, `test_changes.sh`, `mkdocs.yml` - each is
   referenced by real tooling.
 
-There is no `config.py`/`config-3.py` in the tree; they remain in the coverage
-`omit` list only because removing them changes the coverage report. Low value,
-left alone.
+There is no `config.py`/`config-3.py` in the tree; the dead entries were
+removed from the coverage `omit` list in a later cleanup commit.
 
 ## Phase 6. Docs and README
 

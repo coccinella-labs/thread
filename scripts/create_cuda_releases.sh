@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright (c) 2026, bniladridas. All rights reserved.
+# Copyright (c) 2026, Coccinella Labs. All rights reserved.
 
 set -euo pipefail
 

@@ -76,4 +76,4 @@ Thank you for contributing to thread!
 
 ---
 
-© 2026 bniladridas; BSD 3-Clause license, see [LICENSE](LICENSE)
+© 2026 Coccinella Labs; BSD 3-Clause license, see [LICENSE](LICENSE)

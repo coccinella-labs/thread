@@ -17,10 +17,10 @@ jobs:
           sparse-checkout: |
             signed.json
 
-      - name: Checkout private cla-bot
+      - name: Checkout cla-bot
         uses: actions/checkout@v7
         with:
-          repository: bniladridas/cla-bot
+          repository: coccinella-labs/clabot
           token: ${{ secrets.CLA_BOT_TOKEN }}
           path: cla-bot
 

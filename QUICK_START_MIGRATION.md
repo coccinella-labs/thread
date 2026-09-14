@@ -29,6 +29,10 @@ all still exist because something real depends on each of them. See
 
 7 commits on `refactor/tight-structure`, 69 files changed (+420 / -262).
 
+> The 7 commits below are the core move. Cleanup, restore, and docs-honesty
+> commits came after them; see `git log --oneline main..refactor/tight-structure`
+> for the full branch history.
+
 ```
 838fdee  refactor: move GPU code to src/gpu/
 9fc1959  refactor: move core sources and headers to src/core/
@@ -82,6 +86,30 @@ git revert 7bd8bf0^..main   # or: git reset --hard main after saving your work
 ```
 
 Or simply `git checkout main`; `main` is untouched.
+
+## Post-migration follow-ups
+
+After the 7 core move commits, the branch gained cleanup and honesty commits.
+In order:
+
+1. Dead-file removal: `scripts/__init__.py`, `cmake/Info.plist.in`,
+   `scripts/ci/install_dependencies.sh`, `docs/web/startup/avatar.png`; coverage
+   `omit` entries for nonexistent `config.py`/`config-3.py`; CHANGELOG release
+   URL owner fix.
+2. GPU dead code: `upscaler.cpp`, `test_upscaler.cpp`, `upscaler.hpp` were
+   considered for deletion and instead kept, flagged in README as not compiled
+   and not called, as reference points for future GPU work. `PROJECT_README.md`
+   was likewise kept as a historical document with a banner.
+3. Docs honesty: `COMPATIBILITY.md` rewritten (real deps only, "Not
+   Implemented" list), `ONBOARDING.md` and `index.md` reworded per user copy,
+   `docs/web/*` GPU marketing claims corrected and fabricated deps removed.
+4. Repo-owner consistency: all `github.com/bniladridas` links in `docs/web/*`
+   and CHANGELOG now point at `coccinella-labs/thread`; workflow
+   `repository_owner` guards match `coccinella-labs`; license holder is
+   Coccinella Labs; org logo added to the web pages; CLA workflow uses the
+   org's `clabot` action.
+
+The full order of operations is in the branch history, not in this file.
 
 ## Next steps
 
