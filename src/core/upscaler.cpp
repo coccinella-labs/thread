@@ -14,7 +14,7 @@ public:
 #endif
 
 #ifdef HAVE_METAL
-#include "metal/MetalUpscaler.hpp"
+#include "../gpu/metal/MetalUpscaler.hpp"
 class MetalUpscalerWrapper : public Upscaler {
   std::unique_ptr<MetalUpscaler> m_metalUpscaler;
 

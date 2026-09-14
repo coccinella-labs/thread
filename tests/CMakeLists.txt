@@ -82,7 +82,7 @@ if(TARGET cudart_shim)
   target_include_directories(
     test_metal_shim
     PRIVATE
-      ${CMAKE_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/src/core/include
       ${CMAKE_OSX_SYSROOT}/System/Library/Frameworks/Metal.framework/Headers
       ${gtest_SOURCE_DIR}/googletest/include
       ${gtest_SOURCE_DIR}/googlemock/include)
@@ -124,7 +124,7 @@ if(ENABLE_BENCHMARK AND TARGET cudart_shim)
   target_include_directories(
     benchmark_metal_shim
     PRIVATE
-      ${CMAKE_SOURCE_DIR}/include)
+      ${CMAKE_SOURCE_DIR}/src/core/include)
   if(APPLE)
     target_include_directories(
       benchmark_metal_shim

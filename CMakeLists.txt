@@ -188,7 +188,7 @@ if(USE_CUDA)
     file(GLOB_RECURSE CUDA_SOURCES "src/gpu/cuda/*.cu")
 
     add_library(cuda_objects OBJECT ${CUDA_SOURCES})
-    target_include_directories(cuda_objects PRIVATE ${CMAKE_SOURCE_DIR}/include)
+    target_include_directories(cuda_objects PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
     if(WITH_OPENCV)
       target_include_directories(cuda_objects PRIVATE ${OpenCV_INCLUDE_DIRS})
     endif()
@@ -305,7 +305,7 @@ if(APPLE AND WITH_METAL)
 
   # Set include directories
   target_include_directories(metal_upscaler
-                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/core/include)
 
   # Link against required frameworks
   target_link_libraries(metal_upscaler PRIVATE -framework Metal -framework
@@ -341,7 +341,7 @@ if(APPLE AND WITH_METAL)
   target_include_directories(
     metal_shim
     PRIVATE
-      ${CMAKE_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/src/core/include
       ${CMAKE_OSX_SYSROOT}/System/Library/Frameworks/Metal.framework/Headers
       ${CMAKE_OSX_SYSROOT}/System/Library/Frameworks/MetalKit.framework/Headers
       ${CMAKE_OSX_SYSROOT}/System/Library/Frameworks/Foundation.framework/Headers
@@ -424,7 +424,7 @@ if(APPLE AND WITH_METAL)
   # Create a convenience interface library for the Metal shim
   add_library(cuda_shim INTERFACE)
   target_include_directories(
-    cuda_shim INTERFACE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    cuda_shim INTERFACE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/include>
                         $<INSTALL_INTERFACE:include>)
 
   # Create a combined shim library that can be used as a drop-in replacement for
@@ -697,7 +697,7 @@ if(USE_CUDA)
   set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH})
   add_executable(upscale src/gpu/cuda/upscale.cu)
   target_link_libraries(upscale CUDA::cudart)
-  target_include_directories(upscale PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(upscale PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(OpenMP_CXX_FOUND)
     target_link_libraries(upscale OpenMP::OpenMP_CXX)
   endif()
@@ -709,7 +709,7 @@ if(USE_CUDA)
   # Additional CUDA executables
   add_executable(filters src/gpu/cuda/filters.cu)
   target_link_libraries(filters CUDA::cudart)
-  target_include_directories(filters PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(filters PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(OpenMP_CXX_FOUND)
     target_link_libraries(filters OpenMP::OpenMP_CXX)
   endif()
@@ -720,7 +720,7 @@ if(USE_CUDA)
 
   add_executable(rotation src/gpu/cuda/rotation.cu)
   target_link_libraries(rotation CUDA::cudart)
-  target_include_directories(rotation PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(rotation PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(OpenMP_CXX_FOUND)
     target_link_libraries(rotation OpenMP::OpenMP_CXX)
   endif()
@@ -731,7 +731,7 @@ if(USE_CUDA)
 
   add_executable(resize src/gpu/cuda/resize.cu)
   target_link_libraries(resize CUDA::cudart)
-  target_include_directories(resize PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(resize PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(OpenMP_CXX_FOUND)
     target_link_libraries(resize OpenMP::OpenMP_CXX)
   endif()
@@ -743,7 +743,7 @@ if(USE_CUDA)
   # Additional CUDA tools (placeholders)
   add_executable(colorspace src/gpu/cuda/colorspace.cu)
   target_link_libraries(colorspace CUDA::cudart)
-  target_include_directories(colorspace PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(colorspace PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(colorspace ${OpenCV_LIBS})
     target_include_directories(colorspace PRIVATE ${OpenCV_INCLUDE_DIRS})
@@ -751,7 +751,7 @@ if(USE_CUDA)
 
   add_executable(histogram src/gpu/cuda/histogram.cu)
   target_link_libraries(histogram CUDA::cudart)
-  target_include_directories(histogram PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(histogram PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(histogram ${OpenCV_LIBS})
     target_include_directories(histogram PRIVATE ${OpenCV_INCLUDE_DIRS})
@@ -759,7 +759,7 @@ if(USE_CUDA)
 
   add_executable(morphology src/gpu/cuda/morphology.cu)
   target_link_libraries(morphology CUDA::cudart)
-  target_include_directories(morphology PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(morphology PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(morphology ${OpenCV_LIBS})
     target_include_directories(morphology PRIVATE ${OpenCV_INCLUDE_DIRS})
@@ -767,7 +767,7 @@ if(USE_CUDA)
 
   add_executable(median src/gpu/cuda/median.cu)
   target_link_libraries(median CUDA::cudart)
-  target_include_directories(median PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(median PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(median ${OpenCV_LIBS})
     target_include_directories(median PRIVATE ${OpenCV_INCLUDE_DIRS})
@@ -775,7 +775,7 @@ if(USE_CUDA)
 
   add_executable(sharpen src/gpu/cuda/sharpen.cu)
   target_link_libraries(sharpen CUDA::cudart)
-  target_include_directories(sharpen PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(sharpen PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(sharpen ${OpenCV_LIBS})
     target_include_directories(sharpen PRIVATE ${OpenCV_INCLUDE_DIRS})
@@ -783,7 +783,7 @@ if(USE_CUDA)
 
   add_executable(threshold src/gpu/cuda/threshold.cu)
   target_link_libraries(threshold CUDA::cudart)
-  target_include_directories(threshold PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(threshold PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(threshold ${OpenCV_LIBS})
     target_include_directories(threshold PRIVATE ${OpenCV_INCLUDE_DIRS})
@@ -791,7 +791,7 @@ if(USE_CUDA)
 
   add_executable(canny src/gpu/cuda/canny.cu)
   target_link_libraries(canny CUDA::cudart)
-  target_include_directories(canny PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(canny PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(canny ${OpenCV_LIBS})
     target_include_directories(canny PRIVATE ${OpenCV_INCLUDE_DIRS})
@@ -799,7 +799,7 @@ if(USE_CUDA)
 
   add_executable(blend src/gpu/cuda/blend.cu)
   target_link_libraries(blend CUDA::cudart)
-  target_include_directories(blend PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(blend PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(blend ${OpenCV_LIBS})
     target_include_directories(blend PRIVATE ${OpenCV_INCLUDE_DIRS})
@@ -807,15 +807,15 @@ if(USE_CUDA)
 endif()
 
 # Add preprocess_c executable (always available, no OpenCV dependency)
-add_executable(preprocess_c src/preprocess.c)
-target_include_directories(preprocess_c PRIVATE ${CMAKE_SOURCE_DIR}/include)
+add_executable(preprocess_c src/core/preprocess.c)
+target_include_directories(preprocess_c PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
 if(NOT MSVC)
   target_link_libraries(preprocess_c m)
 endif()
 
 # Add test_preprocess executable
 add_executable(test_preprocess tests/test_preprocess.c)
-target_include_directories(test_preprocess PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(test_preprocess PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
 if(NOT MSVC)
   target_link_libraries(test_preprocess m)
 endif()
@@ -823,17 +823,17 @@ endif()
 # Add preprocess library and tests (OpenCV dependent)
 if(WITH_OPENCV AND OpenCV_FOUND)
   # Add the preprocess library
-  add_library(preprocess src/preprocess.cpp)
+  add_library(preprocess src/core/preprocess.cpp)
   target_link_libraries(preprocess ${OpenCV_LIBS})
   target_include_directories(preprocess PRIVATE ${OpenCV_INCLUDE_DIRS}
-                                                ${CMAKE_SOURCE_DIR}/include)
+                                                ${CMAKE_SOURCE_DIR}/src/core/include)
 
   # Add test_utils if it exists
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_utils.cpp")
     add_executable(test_utils tests/test_utils.cpp)
     target_link_libraries(test_utils ${OpenCV_LIBS})
     target_include_directories(test_utils PRIVATE ${OpenCV_INCLUDE_DIRS}
-                                                  ${CMAKE_SOURCE_DIR}/include)
+                                                  ${CMAKE_SOURCE_DIR}/src/core/include)
     add_test(NAME test_utils COMMAND $<TARGET_FILE:test_utils>)
   endif()
 
