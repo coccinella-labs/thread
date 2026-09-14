@@ -44,9 +44,14 @@ endif()
 set(CMAKE_OBJCXX_STANDARD 17)
 set(CMAKE_OBJCXX_STANDARD_REQUIRED ON)
 
-# Include benchmark and CUDA control
-include(benchmark.cmake)
-include(cuda.cmake)
+# Benchmark control options
+option(ENABLE_BENCHMARK "Enable Google Benchmark library and tests" ON)
+option(ENABLE_BENCHMARK_TESTING "Enable Google Benchmark internal tests" ON)
+option(ENABLE_BENCHMARK_GTEST_TESTS "Enable Google Benchmark GTest tests" OFF)
+
+# CUDA control options
+option(USE_CUDA "Build with CUDA support" OFF)
+option(CUDA_ARCH "CUDA architecture to target" "75;80;86")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -125,7 +130,7 @@ if(APPLE AND WITH_METAL)
       ${COREGRAPHICS_LIBRARY})
 endif()
 
-# CUDA support controlled by cuda.cmake
+# CUDA support controlled by the USE_CUDA option above
 if(USE_CUDA)
   find_package(CUDA QUIET)
   if(CUDA_FOUND)
