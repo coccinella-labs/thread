@@ -53,7 +53,7 @@ scp -r "$LOCAL_TILES_DIR" "$CLOUD_USER@$CLOUD_IP:$CLOUD_PROJECT_PATH/$REMOTE_TIL
 
 echo "Building CUDA upscaler on cloud..."
 # Build CUDA upscaler on cloud with proper variable passing
-ssh "$CLOUD_USER@$CLOUD_IP" "PROJECT_PATH=$(printf '%q' "$CLOUD_PROJECT_PATH") UPSCALER=$(printf '%q' "$UPSCALER_NAME") bash -c 'cd \"\$PROJECT_PATH\" && nvcc cloud_gpu/upscale.cu -o \"\$UPSCALER\" -I/usr/local/include/opencv4 -L/usr/local/lib -lopencv_core -lopencv_imgcodecs -lopencv_imgproc -lopencv_highgui -std=c++17'"
+ssh "$CLOUD_USER@$CLOUD_IP" "PROJECT_PATH=$(printf '%q' "$CLOUD_PROJECT_PATH") UPSCALER=$(printf '%q' "$UPSCALER_NAME") bash -c 'cd \"\$PROJECT_PATH\" && nvcc src/gpu/cuda/upscale.cu -o \"\$UPSCALER\" -I/usr/local/include/opencv4 -L/usr/local/lib -lopencv_core -lopencv_imgcodecs -lopencv_imgproc -lopencv_highgui -std=c++17'"
 
 echo "Processing complete. Transfer results back with:"
 echo "scp -r $(printf '%q' "$CLOUD_USER@$CLOUD_IP:$CLOUD_PROJECT_PATH/upscaled") ./test_images/"

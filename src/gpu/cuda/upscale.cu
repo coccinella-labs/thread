@@ -17,7 +17,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <string>
-#include "../include/cuda_utils.hpp"
+#include "cuda_utils.hpp"
 #ifdef _OPENMP
 #include <omp.h>
 #endif

@@ -64,21 +64,18 @@ core:
   - changed-files:
       - any-glob-to-any-file:
           - 'src/**'
-          - 'include/**'
 
 gpu:
   - changed-files:
       - any-glob-to-any-file:
-          - 'cloud_gpu/**'
-          - 'src/metal/**'
+          - 'src/gpu/**'
           - '**/*.cu'
           - '**/*.cuh'
-          - 'cuda.cmake'
 
 api:
   - changed-files:
       - any-glob-to-any-file:
-          - 'api/**'
+          - 'src/api/**'
 
 build:
   - changed-files:

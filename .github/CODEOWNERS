@@ -5,7 +5,5 @@
 * @bniladridas
 
 # Specific directories
-cloud_gpu/ @bniladridas
 scripts/ @bniladridas
 src/ @bniladridas
-tests/ @bniladridas

@@ -185,7 +185,7 @@ if(USE_CUDA)
     set(CUDA_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_cudart_static_LIBRARY}
                        ${CUDA_cudadevrt_LIBRARY})
 
-    file(GLOB_RECURSE CUDA_SOURCES "cloud_gpu/*.cu")
+    file(GLOB_RECURSE CUDA_SOURCES "src/gpu/cuda/*.cu")
 
     add_library(cuda_objects OBJECT ${CUDA_SOURCES})
     target_include_directories(cuda_objects PRIVATE ${CMAKE_SOURCE_DIR}/include)
@@ -253,7 +253,7 @@ if(APPLE AND WITH_METAL)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 
   # Add Metal shader compilation
-  set(METAL_SHADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/metal/Upscale.metal)
+  set(METAL_SHADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/gpu/metal/Upscale.metal)
 
   # Compile Metal shaders into a Metal library
   add_custom_command(
@@ -294,7 +294,7 @@ if(APPLE AND WITH_METAL)
   add_compile_definitions(HAVE_METAL=1)
 
   # Add Metal source files
-  set(METAL_SOURCES src/metal/MetalUpscaler.cpp)
+  set(METAL_SOURCES src/gpu/metal/MetalUpscaler.cpp)
 
   # Create a Metal upscaler library
   add_library(metal_upscaler ${METAL_SOURCES})
@@ -335,7 +335,7 @@ if(APPLE AND WITH_METAL)
   add_library(upscaler_metal ALIAS metal_upscaler)
 
   # Add Metal shim implementation
-  set(METAL_SHIM_SOURCES src/metal/MetalShim.mm)
+  set(METAL_SHIM_SOURCES src/gpu/metal/MetalShim.mm)
 
   add_library(metal_shim OBJECT ${METAL_SHIM_SOURCES})
   target_include_directories(
@@ -360,7 +360,7 @@ if(APPLE AND WITH_METAL)
                                                                "-std=gnu++17")
 
   # Add Metal shader compilation
-  set(METAL_SHADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/metal/Upscale.metal)
+  set(METAL_SHADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/gpu/metal/Upscale.metal)
 
   # Create output directory for Metal shaders
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders)
@@ -695,7 +695,7 @@ if(USE_CUDA)
   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -std=c++17")
   set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH})
-  add_executable(upscale cloud_gpu/upscale.cu)
+  add_executable(upscale src/gpu/cuda/upscale.cu)
   target_link_libraries(upscale CUDA::cudart)
   target_include_directories(upscale PRIVATE ${CMAKE_SOURCE_DIR}/include)
   if(OpenMP_CXX_FOUND)
@@ -707,7 +707,7 @@ if(USE_CUDA)
   endif()
 
   # Additional CUDA executables
-  add_executable(filters cloud_gpu/filters.cu)
+  add_executable(filters src/gpu/cuda/filters.cu)
   target_link_libraries(filters CUDA::cudart)
   target_include_directories(filters PRIVATE ${CMAKE_SOURCE_DIR}/include)
   if(OpenMP_CXX_FOUND)
@@ -718,7 +718,7 @@ if(USE_CUDA)
     target_include_directories(filters PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(rotation cloud_gpu/rotation.cu)
+  add_executable(rotation src/gpu/cuda/rotation.cu)
   target_link_libraries(rotation CUDA::cudart)
   target_include_directories(rotation PRIVATE ${CMAKE_SOURCE_DIR}/include)
   if(OpenMP_CXX_FOUND)
@@ -729,7 +729,7 @@ if(USE_CUDA)
     target_include_directories(rotation PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(resize cloud_gpu/resize.cu)
+  add_executable(resize src/gpu/cuda/resize.cu)
   target_link_libraries(resize CUDA::cudart)
   target_include_directories(resize PRIVATE ${CMAKE_SOURCE_DIR}/include)
   if(OpenMP_CXX_FOUND)
@@ -741,7 +741,7 @@ if(USE_CUDA)
   endif()
 
   # Additional CUDA tools (placeholders)
-  add_executable(colorspace cloud_gpu/colorspace.cu)
+  add_executable(colorspace src/gpu/cuda/colorspace.cu)
   target_link_libraries(colorspace CUDA::cudart)
   target_include_directories(colorspace PRIVATE ${CMAKE_SOURCE_DIR}/include)
   if(WITH_OPENCV)
@@ -749,7 +749,7 @@ if(USE_CUDA)
     target_include_directories(colorspace PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(histogram cloud_gpu/histogram.cu)
+  add_executable(histogram src/gpu/cuda/histogram.cu)
   target_link_libraries(histogram CUDA::cudart)
   target_include_directories(histogram PRIVATE ${CMAKE_SOURCE_DIR}/include)
   if(WITH_OPENCV)
@@ -757,7 +757,7 @@ if(USE_CUDA)
     target_include_directories(histogram PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(morphology cloud_gpu/morphology.cu)
+  add_executable(morphology src/gpu/cuda/morphology.cu)
   target_link_libraries(morphology CUDA::cudart)
   target_include_directories(morphology PRIVATE ${CMAKE_SOURCE_DIR}/include)
   if(WITH_OPENCV)
@@ -765,7 +765,7 @@ if(USE_CUDA)
     target_include_directories(morphology PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(median cloud_gpu/median.cu)
+  add_executable(median src/gpu/cuda/median.cu)
   target_link_libraries(median CUDA::cudart)
   target_include_directories(median PRIVATE ${CMAKE_SOURCE_DIR}/include)
   if(WITH_OPENCV)
@@ -773,7 +773,7 @@ if(USE_CUDA)
     target_include_directories(median PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(sharpen cloud_gpu/sharpen.cu)
+  add_executable(sharpen src/gpu/cuda/sharpen.cu)
   target_link_libraries(sharpen CUDA::cudart)
   target_include_directories(sharpen PRIVATE ${CMAKE_SOURCE_DIR}/include)
   if(WITH_OPENCV)
@@ -781,7 +781,7 @@ if(USE_CUDA)
     target_include_directories(sharpen PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(threshold cloud_gpu/threshold.cu)
+  add_executable(threshold src/gpu/cuda/threshold.cu)
   target_link_libraries(threshold CUDA::cudart)
   target_include_directories(threshold PRIVATE ${CMAKE_SOURCE_DIR}/include)
   if(WITH_OPENCV)
@@ -789,7 +789,7 @@ if(USE_CUDA)
     target_include_directories(threshold PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(canny cloud_gpu/canny.cu)
+  add_executable(canny src/gpu/cuda/canny.cu)
   target_link_libraries(canny CUDA::cudart)
   target_include_directories(canny PRIVATE ${CMAKE_SOURCE_DIR}/include)
   if(WITH_OPENCV)
@@ -797,7 +797,7 @@ if(USE_CUDA)
     target_include_directories(canny PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(blend cloud_gpu/blend.cu)
+  add_executable(blend src/gpu/cuda/blend.cu)
   target_link_libraries(blend CUDA::cudart)
   target_include_directories(blend PRIVATE ${CMAKE_SOURCE_DIR}/include)
   if(WITH_OPENCV)
