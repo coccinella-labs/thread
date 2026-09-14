@@ -8,7 +8,7 @@ on:
 jobs:
   cla:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'bniladridas'
+    if: github.repository_owner == 'coccinella-labs'
     permissions:
       contents: read
     steps:

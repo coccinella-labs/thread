@@ -12,7 +12,7 @@ permissions:
 jobs:
   label:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'bniladridas'
+    if: github.repository_owner == 'coccinella-labs'
     steps:
       - uses: actions/checkout@v7
 
