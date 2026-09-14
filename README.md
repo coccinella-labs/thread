@@ -51,9 +51,15 @@ It listens on port 5001. Check the health endpoint.
 
 ```bash
 curl http://localhost:5001/v1/health
+# → { status: "healthy", version: "v1" }
 ```
 
-You should get back a JSON response with status healthy.
+The API root lists the available endpoints.
+
+```bash
+curl http://localhost:5001/
+# → { message: "Thread API v1", endpoints: { health, images, tiles, stitch } }
+```
 
 ## What the API Does
 
@@ -64,12 +70,16 @@ Upload an image. You send a JPG, PNG, BMP, or TIFF file. The API gives back an i
 ```bash
 curl -X POST http://localhost:5001/v1/images \
   -F "file=@image.jpg"
+# 201 → { id, filename, format, size, created_at,
+#         _links: { self, tiles, upscale } }
 ```
 
 List all images you have uploaded.
 
 ```bash
 curl http://localhost:5001/v1/images?offset=0&limit=25
+# → { count, total, _embedded: { images: [...] },
+#     _links: { self, next, prev } }
 ```
 
 Create tiles from an image. This splits the image into squares. The default tile size is 512 by 512 pixels.
@@ -78,14 +88,19 @@ Create tiles from an image. This splits the image into squares. The default tile
 curl -X POST http://localhost:5001/v1/images/<image_id>/tiles \
   -H "Content-Type: application/json" \
   -d '{"tile_size": 512}'
+# 202 → { image_id, tile_count, tile_size,
+#         _links: { self, image },
+#         _embedded: { tiles: [{ id, filename, size, href }] } }
 ```
 
-The API returns a job ID. You can check the status of the job at /v1/jobs/<job_id>.
+The tiles live in `OUTPUT_FOLDER/tiles_<image_id>/`.
 
 List all tiles.
 
 ```bash
 curl http://localhost:5001/v1/tiles?offset=0&limit=25
+# → { count, total, _embedded: { tiles: [...] },
+#     _links: { self, next, prev } }
 ```
 
 Upscale an entire image. You specify the scale factor from 1 to 8. Default is 2.
@@ -94,6 +109,7 @@ Upscale an entire image. You specify the scale factor from 1 to 8. Default is 2.
 curl -X POST http://localhost:5001/v1/images/<image_id>/upscale \
   -H "Content-Type: application/json" \
   -d '{"scale": 2}'
+# 202 → { id, scale, output_file, _links: { self, image, download } }
 ```
 
 Upscale a single tile. Same scale options.
@@ -102,6 +118,7 @@ Upscale a single tile. Same scale options.
 curl -X POST http://localhost:5001/v1/tiles/<tile_id>/upscale \
   -H "Content-Type: application/json" \
   -d '{"scale": 2}'
+# 202 → { id, scale, output_file, _links: { self, tile, download } }
 ```
 
 Stitch tiles back into one image. You pass a list of tile IDs, the number of rows, the number of columns, and a name for the output file.
@@ -115,6 +132,17 @@ curl -X POST http://localhost:5001/v1/stitch \
     "cols": 2,
     "output": "stitched.png"
   }'
+# 202 → { id: <job_id>, status: "completed", result: "/v1/outputs/...",
+#         tile_count, rows, cols,
+#         _links: { self, status, download } }
+```
+
+Check the status of any stitch job.
+
+```bash
+curl http://localhost:5001/v1/jobs/<job_id>
+# → { id, status, result, tile_count, rows, cols,
+#     _links: { self } }
 ```
 
 Download the final output.
