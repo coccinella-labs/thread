@@ -169,7 +169,7 @@ You should see `test_preprocess` pass. That is the C tiler, cut from `stb_image`
 python -m pytest -v
 ```
 
-Covers `test_api_server.py`, `test_stitch.py`, `test_create_test_image.py` and the rest under `tests/`.
+Covers `test_api_server.py`, `test_stitch.py`, `test_create_test_image.py` colocated with their modules under `src/`.
 
 ### 4: See the whole flow, end to end
 

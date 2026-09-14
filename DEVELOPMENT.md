@@ -124,7 +124,7 @@ ctest --output-on-failure
 ### Running Benchmarks
 
 ```bash
-./tests/benchmark_metal_shim
+./build/bin/benchmark_metal_shim
 ```
 
 ### Code Formatting

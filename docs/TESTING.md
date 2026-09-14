@@ -89,14 +89,14 @@ open coverage/index.html
 
 ### Unit Tests
 
-- Place unit tests in `tests/unit/`
+- Place unit tests next to the code they exercise under `src/` (e.g. `src/gpu/metal/test_shim.cpp`)
 - Use Google Test framework
 - Test files should be named `test_*.cpp`
 - Test cases should be small and focused
 
 ### Benchmark Tests
 
-- Place benchmark tests in `tests/performance/`
+- Place benchmark tests next to the code they exercise under `src/` (e.g. `src/gpu/metal/benchmark.cpp`)
 - Use Google Benchmark framework
 - Test files should be named `benchmark_*.cpp`
 - Include a range of input sizes
