@@ -92,7 +92,7 @@
             <h3>2. Architecture Overview</h3>
             <ul>
                 <li><strong>Local CPU Processing:</strong> Image tiling and stitching using C/C++ with OpenCV or stb_image</li>
-                <li><strong>GPU Acceleration:</strong> CUDA (Linux/Windows) or Metal (macOS) for upscaling</li>
+                <li><strong>GPU Acceleration (Experimental):</strong> CUDA (Linux/Windows) or Metal (macOS). GPU code is not used by the API; the API always upscales on the CPU.</li>
                 <li><strong>Python Orchestration:</strong> Pipeline coordination and testing</li>
             </ul>
 
