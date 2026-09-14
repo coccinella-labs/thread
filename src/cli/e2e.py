@@ -73,7 +73,10 @@ print("Upscale done")
 
 # Stitch
 if upscaled_count > 0:
-    subprocess.run([sys.executable, str(Path(__file__).parent / "stitch.py"), "test_images/upscaled", "test_images/final_output.jpg"], check=True)
+    subprocess.run(
+        [sys.executable, str(Path(__file__).parent / "stitch.py"), "test_images/upscaled", "test_images/final_output.jpg"],
+        check=True,
+    )
 
     print("Stitch done")
 
