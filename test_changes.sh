@@ -50,7 +50,7 @@ for index in range(4):
         raise SystemExit("failed to write test tile")
 PY
 
-"$PYTHON_BIN" scripts/stitch.py "$TMP_DIR/tiles" "$TMP_DIR/stitched.jpg" --rows 2 --cols 2 --pattern "tile_*.jpg" >/dev/null
+"$PYTHON_BIN" src/cli/stitch.py "$TMP_DIR/tiles" "$TMP_DIR/stitched.jpg" --rows 2 --cols 2 --pattern "tile_*.jpg" >/dev/null
 [ -f "$TMP_DIR/stitched.jpg" ] || fail "stitch.py did not create output"
 pass "stitch.py creates output with explicit grid"
 

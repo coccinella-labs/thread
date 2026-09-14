@@ -49,7 +49,7 @@ Examples:
 
 ## Testing
 
-- Run unit tests: `python -m pytest tests/`
+- Run unit tests: `python -m pytest src`
 - Run C/C++ tests: `cd build && ctest`
 - Ensure all CI checks pass
 
@@ -76,4 +76,4 @@ Thank you for contributing to thread!
 
 ---
 
-© 2026 bniladridas; BSD 3-Clause license, see [LICENSE](LICENSE)
+© 2026 Coccinella Labs; BSD 3-Clause license, see [LICENSE](LICENSE)

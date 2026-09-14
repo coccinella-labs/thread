@@ -479,8 +479,8 @@ jobs:
           name: Test Python scripts
           shell: bash
           command: |
-            python create_test_image.py
-            python scripts/stitch.py --help || true
+            python src/cli/create_test_image.py
+            python src/cli/stitch.py --help || true
 
       - store_test_results:
           path: test-results
@@ -527,7 +527,7 @@ jobs:
       - run:
           name: Run E2E tests
           shell: bash
-          command: python3 scripts/e2e.py
+          command: python3 src/cli/e2e.py
 
       - store_test_results:
           path: build/Testing

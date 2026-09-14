@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright (c) 2026, bniladridas. All rights reserved.
+# Copyright (c) 2026, Coccinella Labs. All rights reserved.
 
 # Dockerfile for thread (local CPU components)
 FROM ubuntu:26.04 AS builder
@@ -53,4 +53,4 @@ COPY --from=builder /app/build /app/build
 COPY --from=builder /app/build/bin/preprocess_c /app/preprocess_c
 
 # Default command
-CMD ["python3", "scripts/e2e.py"]
+CMD ["python3", "src/cli/e2e.py"]

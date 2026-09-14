@@ -30,6 +30,11 @@ htmlcov/
 __pycache__/
 *.py[cod]
 *$py.class
+venv/
+.venv/
+
+# Stray local build artifacts
+src/preprocess
 
 # Local development
 .env

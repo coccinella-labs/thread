@@ -44,9 +44,14 @@ endif()
 set(CMAKE_OBJCXX_STANDARD 17)
 set(CMAKE_OBJCXX_STANDARD_REQUIRED ON)
 
-# Include benchmark and CUDA control
-include(benchmark.cmake)
-include(cuda.cmake)
+# Benchmark control options
+option(ENABLE_BENCHMARK "Enable Google Benchmark library and tests" ON)
+option(ENABLE_BENCHMARK_TESTING "Enable Google Benchmark internal tests" ON)
+option(ENABLE_BENCHMARK_GTEST_TESTS "Enable Google Benchmark GTest tests" OFF)
+
+# CUDA control options
+option(USE_CUDA "Build with CUDA support" OFF)
+option(CUDA_ARCH "CUDA architecture to target" "75;80;86")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -125,7 +130,7 @@ if(APPLE AND WITH_METAL)
       ${COREGRAPHICS_LIBRARY})
 endif()
 
-# CUDA support controlled by cuda.cmake
+# CUDA support controlled by the USE_CUDA option above
 if(USE_CUDA)
   find_package(CUDA QUIET)
   if(CUDA_FOUND)
@@ -185,10 +190,11 @@ if(USE_CUDA)
     set(CUDA_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_cudart_static_LIBRARY}
                        ${CUDA_cudadevrt_LIBRARY})
 
-    file(GLOB_RECURSE CUDA_SOURCES "cloud_gpu/*.cu")
+    file(GLOB_RECURSE CUDA_SOURCES CONFIGURE_DEPENDS "src/gpu/cuda/*.cu")
+    list(FILTER CUDA_SOURCES EXCLUDE REGEX "test_shim\\.cu$")
 
     add_library(cuda_objects OBJECT ${CUDA_SOURCES})
-    target_include_directories(cuda_objects PRIVATE ${CMAKE_SOURCE_DIR}/include)
+    target_include_directories(cuda_objects PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
     if(WITH_OPENCV)
       target_include_directories(cuda_objects PRIVATE ${OpenCV_INCLUDE_DIRS})
     endif()
@@ -253,7 +259,7 @@ if(APPLE AND WITH_METAL)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 
   # Add Metal shader compilation
-  set(METAL_SHADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/metal/Upscale.metal)
+  set(METAL_SHADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/gpu/metal/Upscale.metal)
 
   # Compile Metal shaders into a Metal library
   add_custom_command(
@@ -294,7 +300,7 @@ if(APPLE AND WITH_METAL)
   add_compile_definitions(HAVE_METAL=1)
 
   # Add Metal source files
-  set(METAL_SOURCES src/metal/MetalUpscaler.cpp)
+  set(METAL_SOURCES src/gpu/metal/MetalUpscaler.cpp)
 
   # Create a Metal upscaler library
   add_library(metal_upscaler ${METAL_SOURCES})
@@ -305,7 +311,7 @@ if(APPLE AND WITH_METAL)
 
   # Set include directories
   target_include_directories(metal_upscaler
-                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/core/include)
 
   # Link against required frameworks
   target_link_libraries(metal_upscaler PRIVATE -framework Metal -framework
@@ -335,13 +341,13 @@ if(APPLE AND WITH_METAL)
   add_library(upscaler_metal ALIAS metal_upscaler)
 
   # Add Metal shim implementation
-  set(METAL_SHIM_SOURCES src/metal/MetalShim.mm)
+  set(METAL_SHIM_SOURCES src/gpu/metal/MetalShim.mm)
 
   add_library(metal_shim OBJECT ${METAL_SHIM_SOURCES})
   target_include_directories(
     metal_shim
     PRIVATE
-      ${CMAKE_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/src/core/include
       ${CMAKE_OSX_SYSROOT}/System/Library/Frameworks/Metal.framework/Headers
       ${CMAKE_OSX_SYSROOT}/System/Library/Frameworks/MetalKit.framework/Headers
       ${CMAKE_OSX_SYSROOT}/System/Library/Frameworks/Foundation.framework/Headers
@@ -360,7 +366,7 @@ if(APPLE AND WITH_METAL)
                                                                "-std=gnu++17")
 
   # Add Metal shader compilation
-  set(METAL_SHADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/metal/Upscale.metal)
+  set(METAL_SHADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/gpu/metal/Upscale.metal)
 
   # Create output directory for Metal shaders
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders)
@@ -424,7 +430,7 @@ if(APPLE AND WITH_METAL)
   # Create a convenience interface library for the Metal shim
   add_library(cuda_shim INTERFACE)
   target_include_directories(
-    cuda_shim INTERFACE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    cuda_shim INTERFACE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/include>
                         $<INSTALL_INTERFACE:include>)
 
   # Create a combined shim library that can be used as a drop-in replacement for
@@ -695,9 +701,9 @@ if(USE_CUDA)
   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -std=c++17")
   set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH})
-  add_executable(upscale cloud_gpu/upscale.cu)
+  add_executable(upscale src/gpu/cuda/upscale.cu)
   target_link_libraries(upscale CUDA::cudart)
-  target_include_directories(upscale PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(upscale PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(OpenMP_CXX_FOUND)
     target_link_libraries(upscale OpenMP::OpenMP_CXX)
   endif()
@@ -707,9 +713,9 @@ if(USE_CUDA)
   endif()
 
   # Additional CUDA executables
-  add_executable(filters cloud_gpu/filters.cu)
+  add_executable(filters src/gpu/cuda/filters.cu)
   target_link_libraries(filters CUDA::cudart)
-  target_include_directories(filters PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(filters PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(OpenMP_CXX_FOUND)
     target_link_libraries(filters OpenMP::OpenMP_CXX)
   endif()
@@ -718,9 +724,9 @@ if(USE_CUDA)
     target_include_directories(filters PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(rotation cloud_gpu/rotation.cu)
+  add_executable(rotation src/gpu/cuda/rotation.cu)
   target_link_libraries(rotation CUDA::cudart)
-  target_include_directories(rotation PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(rotation PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(OpenMP_CXX_FOUND)
     target_link_libraries(rotation OpenMP::OpenMP_CXX)
   endif()
@@ -729,9 +735,9 @@ if(USE_CUDA)
     target_include_directories(rotation PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(resize cloud_gpu/resize.cu)
+  add_executable(resize src/gpu/cuda/resize.cu)
   target_link_libraries(resize CUDA::cudart)
-  target_include_directories(resize PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(resize PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(OpenMP_CXX_FOUND)
     target_link_libraries(resize OpenMP::OpenMP_CXX)
   endif()
@@ -741,65 +747,65 @@ if(USE_CUDA)
   endif()
 
   # Additional CUDA tools (placeholders)
-  add_executable(colorspace cloud_gpu/colorspace.cu)
+  add_executable(colorspace src/gpu/cuda/colorspace.cu)
   target_link_libraries(colorspace CUDA::cudart)
-  target_include_directories(colorspace PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(colorspace PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(colorspace ${OpenCV_LIBS})
     target_include_directories(colorspace PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(histogram cloud_gpu/histogram.cu)
+  add_executable(histogram src/gpu/cuda/histogram.cu)
   target_link_libraries(histogram CUDA::cudart)
-  target_include_directories(histogram PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(histogram PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(histogram ${OpenCV_LIBS})
     target_include_directories(histogram PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(morphology cloud_gpu/morphology.cu)
+  add_executable(morphology src/gpu/cuda/morphology.cu)
   target_link_libraries(morphology CUDA::cudart)
-  target_include_directories(morphology PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(morphology PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(morphology ${OpenCV_LIBS})
     target_include_directories(morphology PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(median cloud_gpu/median.cu)
+  add_executable(median src/gpu/cuda/median.cu)
   target_link_libraries(median CUDA::cudart)
-  target_include_directories(median PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(median PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(median ${OpenCV_LIBS})
     target_include_directories(median PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(sharpen cloud_gpu/sharpen.cu)
+  add_executable(sharpen src/gpu/cuda/sharpen.cu)
   target_link_libraries(sharpen CUDA::cudart)
-  target_include_directories(sharpen PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(sharpen PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(sharpen ${OpenCV_LIBS})
     target_include_directories(sharpen PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(threshold cloud_gpu/threshold.cu)
+  add_executable(threshold src/gpu/cuda/threshold.cu)
   target_link_libraries(threshold CUDA::cudart)
-  target_include_directories(threshold PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(threshold PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(threshold ${OpenCV_LIBS})
     target_include_directories(threshold PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(canny cloud_gpu/canny.cu)
+  add_executable(canny src/gpu/cuda/canny.cu)
   target_link_libraries(canny CUDA::cudart)
-  target_include_directories(canny PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(canny PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(canny ${OpenCV_LIBS})
     target_include_directories(canny PRIVATE ${OpenCV_INCLUDE_DIRS})
   endif()
 
-  add_executable(blend cloud_gpu/blend.cu)
+  add_executable(blend src/gpu/cuda/blend.cu)
   target_link_libraries(blend CUDA::cudart)
-  target_include_directories(blend PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_include_directories(blend PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
   if(WITH_OPENCV)
     target_link_libraries(blend ${OpenCV_LIBS})
     target_include_directories(blend PRIVATE ${OpenCV_INCLUDE_DIRS})
@@ -807,15 +813,15 @@ if(USE_CUDA)
 endif()
 
 # Add preprocess_c executable (always available, no OpenCV dependency)
-add_executable(preprocess_c src/preprocess.c)
-target_include_directories(preprocess_c PRIVATE ${CMAKE_SOURCE_DIR}/include)
+add_executable(preprocess_c src/core/preprocess.c)
+target_include_directories(preprocess_c PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
 if(NOT MSVC)
   target_link_libraries(preprocess_c m)
 endif()
 
 # Add test_preprocess executable
-add_executable(test_preprocess tests/test_preprocess.c)
-target_include_directories(test_preprocess PRIVATE ${CMAKE_SOURCE_DIR}/include)
+add_executable(test_preprocess src/core/test_preprocess.c)
+target_include_directories(test_preprocess PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)
 if(NOT MSVC)
   target_link_libraries(test_preprocess m)
 endif()
@@ -823,17 +829,17 @@ endif()
 # Add preprocess library and tests (OpenCV dependent)
 if(WITH_OPENCV AND OpenCV_FOUND)
   # Add the preprocess library
-  add_library(preprocess src/preprocess.cpp)
+  add_library(preprocess src/core/preprocess.cpp)
   target_link_libraries(preprocess ${OpenCV_LIBS})
   target_include_directories(preprocess PRIVATE ${OpenCV_INCLUDE_DIRS}
-                                                ${CMAKE_SOURCE_DIR}/include)
+                                                ${CMAKE_SOURCE_DIR}/src/core/include)
 
   # Add test_utils if it exists
-  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_utils.cpp")
-    add_executable(test_utils tests/test_utils.cpp)
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/core/test_utils.cpp")
+    add_executable(test_utils src/core/test_utils.cpp)
     target_link_libraries(test_utils ${OpenCV_LIBS})
     target_include_directories(test_utils PRIVATE ${OpenCV_INCLUDE_DIRS}
-                                                  ${CMAKE_SOURCE_DIR}/include)
+                                                  ${CMAKE_SOURCE_DIR}/src/core/include)
     add_test(NAME test_utils COMMAND $<TARGET_FILE:test_utils>)
   endif()
 
@@ -841,9 +847,146 @@ endif()
 
 add_test(NAME test_preprocess COMMAND $<TARGET_FILE:test_preprocess>)
 
-# Add tests subdirectory if testing is enabled
+# Add tests if testing is enabled
 option(BUILD_TESTING "Build the testing tree." ON)
-if(BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests")
+if(BUILD_TESTING)
   enable_testing()
-  add_subdirectory(tests)
+
+  # Add Google Test
+  include(FetchContent)
+
+  # Set platform-specific args
+  if(WIN32)
+    set(MSVC_ARGS -DCMAKE_CXX_FLAGS="/MT"
+                  -DCMAKE_C_FLAGS="/MT")
+  else()
+    set(MSVC_ARGS "")
+  endif()
+
+  # Add Google Test (using a more recent version) - skip on MSVC to avoid runtime issues
+  if(NOT MSVC)
+    FetchContent_Declare(
+      googletest
+      GIT_REPOSITORY https://github.com/google/googletest.git
+      GIT_TAG v1.14.0
+      CMAKE_ARGS ${MSVC_ARGS} -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded)
+  endif()
+
+  # Add Google Benchmark (conditionally)
+  if(ENABLE_BENCHMARK)
+    # Disable benchmark gtest tests to avoid issues
+    set(ENABLE_BENCHMARK_GTEST_TESTS OFF)
+    if(MSVC)
+      set(ENABLE_BENCHMARK_TESTING OFF)
+      set(BENCHMARK_USE_BUNDLED_GTEST OFF)
+      set(BENCHMARK_CACHE_ARGS BENCHMARK_ENABLE_TESTING=OFF BENCHMARK_ENABLE_GTEST_TESTS=OFF BENCHMARK_USE_BUNDLED_GTEST=OFF CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded)
+    else()
+      set(BENCHMARK_CACHE_ARGS BENCHMARK_ENABLE_GTEST_TESTS=OFF CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded)
+    endif()
+
+    # Set benchmark testing flags based on options
+    if(ENABLE_BENCHMARK_TESTING)
+      set(BENCHMARK_TESTING_FLAG -DBENCHMARK_ENABLE_TESTING=ON)
+    else()
+      set(BENCHMARK_TESTING_FLAG -DBENCHMARK_ENABLE_TESTING=OFF)
+    endif()
+
+    if(ENABLE_BENCHMARK_GTEST_TESTS)
+      set(BENCHMARK_GTEST_FLAG -DBENCHMARK_ENABLE_GTEST_TESTS=ON)
+    else()
+      set(BENCHMARK_GTEST_FLAG -DBENCHMARK_ENABLE_GTEST_TESTS=OFF)
+    endif()
+
+    if(BENCHMARK_USE_BUNDLED_GTEST)
+      set(BENCHMARK_BUNDLED_GTEST_FLAG -DBENCHMARK_USE_BUNDLED_GTEST=ON)
+    else()
+      set(BENCHMARK_BUNDLED_GTEST_FLAG -DBENCHMARK_USE_BUNDLED_GTEST=OFF)
+    endif()
+
+    if(WIN32)
+      set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endif()
+
+    FetchContent_Declare(
+      benchmark
+      GIT_REPOSITORY https://github.com/google/benchmark.git
+      GIT_TAG v1.8.3
+      CMAKE_ARGS ${MSVC_ARGS}
+      CMAKE_CACHE_ARGS ${BENCHMARK_CACHE_ARGS})
+
+    if(NOT MSVC)
+      FetchContent_MakeAvailable(googletest)
+    endif()
+    FetchContent_MakeAvailable(benchmark)
+  endif()
+
+  # Add test for Metal shim (only if shim is available)
+  if(TARGET cudart_shim)
+    add_executable(test_metal_shim src/gpu/metal/test_shim.cpp)
+
+    # Link against the Metal shim library and Google Test
+    target_link_libraries(
+      test_metal_shim PRIVATE cudart_shim gtest_main ${METAL_FRAMEWORKS}
+                              ${OpenCV_LIBS})
+
+    # Set C++ standard
+    target_compile_features(test_metal_shim PRIVATE cxx_std_17)
+
+    # Set include directories
+    target_include_directories(
+      test_metal_shim
+      PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/core/include
+        ${CMAKE_OSX_SYSROOT}/System/Library/Frameworks/Metal.framework/Headers
+        ${gtest_SOURCE_DIR}/googletest/include
+        ${gtest_SOURCE_DIR}/googlemock/include)
+
+    # Set compiler flags
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      target_compile_options(test_metal_shim PRIVATE -fobjc-arc -fmodules
+                                                     -fcxx-modules)
+    endif()
+
+    # Add test
+    add_test(NAME test_metal_shim COMMAND $<TARGET_FILE:test_metal_shim>)
+
+    # Add test data
+    set(TEST_DATA_DIR ${CMAKE_CURRENT_BINARY_DIR}/test_data)
+    file(MAKE_DIRECTORY ${TEST_DATA_DIR})
+    add_custom_command(
+      TARGET test_metal_shim
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DATA_DIR}
+      COMMENT "Creating test data directory")
+  endif()
+
+  # Add benchmark executable (only if shim and benchmarks are enabled)
+  if(ENABLE_BENCHMARK AND TARGET cudart_shim)
+    add_executable(benchmark_metal_shim src/gpu/metal/benchmark.cpp)
+
+    # Link benchmark executable
+    target_link_libraries(
+      benchmark_metal_shim PRIVATE cudart_shim benchmark::benchmark
+                                   ${METAL_FRAMEWORKS})
+
+    # Set C++ standard
+    target_compile_features(benchmark_metal_shim PRIVATE cxx_std_17)
+
+    # Set include directories
+    target_include_directories(
+      benchmark_metal_shim
+      PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/core/include)
+    if(APPLE)
+      target_include_directories(
+        benchmark_metal_shim
+        PRIVATE
+          ${CMAKE_OSX_SYSROOT}/System/Library/Frameworks/Metal.framework/Headers)
+    endif()
+
+    # Add benchmark as a test (with timeout)
+    add_test(NAME benchmark_metal_shim COMMAND $<TARGET_FILE:benchmark_metal_shim> --benchmark_min_time=1s)
+    set_tests_properties(benchmark_metal_shim PROPERTIES TIMEOUT 300)
+  endif()
+
 endif()

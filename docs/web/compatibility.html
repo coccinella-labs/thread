@@ -63,7 +63,7 @@
 <body>
     <nav>
         <div class="container">
-            <a href="index.html" class="nav-brand">Thread</a>
+            <a href="index.html" class="nav-brand"><img src="https://avatars.githubusercontent.com/u/283287531?s=64" alt="Coccinella Labs" style="width:20px;height:20px;border-radius:4px;vertical-align:-4px;margin-right:8px;" />Thread</a>
             <div class="nav-links">
                 <a href="api-design.html">API Design</a>
                 <a href="onboarding.html">Onboarding</a>
@@ -81,11 +81,11 @@
 
             <h2>Language Versions</h2>
             <ul>
-                <li>Python: 3.10+ (tested: 3.10, 3.11, 3.12, 3.13, 3.14)</li>
+                <li>Python: 3.10-3.14</li>
                 <li>C++: 20 required</li>
-                <li>CUDA: 12.0+ optional (tested: 12.6.1, 13.0.1, 13.0.2, 13.1.0, 13.1.1)</li>
+                <li>CUDA: 12.0+ optional, experimental (tested: 12.6.1, 13.0.1, 13.0.2, 13.1.0, 13.1.1)</li>
                 <li>Objective-C++: 17 for macOS Metal support</li>
-                <li>Metal: 3.0+ for macOS Metal acceleration</li>
+                <li>Metal: 3.0+ optional, experimental (macOS only)</li>
             </ul>
 
             <h2>Build Tools</h2>
@@ -99,20 +99,18 @@
 
             <h2>Core Dependencies</h2>
             <ul>
-                <li>OpenCV: 4.0+ required, 4.5.0+ recommended, CUDA support optional</li>
-                <li>Eigen: 3.4.0+ required</li>
-                <li>GTest: 1.12.0+ for unit testing</li>
-                <li>pybind11: 2.10.0+ for Python bindings</li>
-                <li>NumPy: 1.21.0+ required for the Python interface</li>
+                <li>OpenCV: 4.0+ optional; stb_image is the fallback</li>
+                <li>GTest: 1.12.0+ for the optional metal/benchmark tests</li>
+                <li>NumPy: 1.21.0+ for the Python CLI and API</li>
             </ul>
 
             <h2>Supported Platforms</h2>
             <table>
                 <thead><tr><th>Platform</th><th>Architecture</th><th>GPU</th><th>Status</th></tr></thead>
                 <tbody>
-                    <tr><td>macOS 12.0+</td><td>x86_64, ARM64</td><td>Metal</td><td>Active</td></tr>
-                    <tr><td>Ubuntu 22.04+</td><td>x86_64</td><td>CUDA 12.0+</td><td>Active</td></tr>
-                    <tr><td>Windows 10+</td><td>x86_64</td><td>CUDA 12.0+</td><td>Active</td></tr>
+                    <tr><td>macOS 11.0+</td><td>x86_64, ARM64</td><td>Metal</td><td>Experimental</td></tr>
+                    <tr><td>Ubuntu 22.04+</td><td>x86_64</td><td>CUDA 12.0+</td><td>Experimental</td></tr>
+                    <tr><td>Windows 10+</td><td>x86_64</td><td>CUDA 12.0+</td><td>Experimental</td></tr>
                 </tbody>
             </table>
 
@@ -121,23 +119,24 @@
             <ul>
                 <li>Ubuntu 22.04+ LTS tested on 22.04 and 24.04</li>
                 <li>GCC: 11.0+ or Clang: 14.0+</li>
-                <li><code>libtbb12</code> (TBB 2021.0+)</li>
-                <li>CUDA: 12.0+ for GPU support</li>
+                <li>CUDA: 12.0+ for experimental GPU support</li>
                 <li>OpenCV: 4.0+ with 4.5.0+ recommended</li>
             </ul>
 
             <h3>Other Linux Distributions</h3>
             <ul>
                 <li>GCC: 11.0+ or Clang: 14.0+</li>
-                <li><code>libtbb12</code> (TBB 2021.0+)</li>
             </ul>
 
-            <h2>Optional Dependencies</h2>
+            <h2>Not Implemented</h2>
+            <p>These were once planned for the project but are not used anywhere in the codebase:</p>
             <ul>
-                <li>TensorRT: 8.5+ for TensorRT acceleration</li>
-                <li>ONNX Runtime: 1.13.0+ for ONNX model support</li>
-                <li>TensorFlow: 2.12.0+ optional</li>
-                <li>PyTorch: 2.0.0+ optional</li>
+                <li>Eigen: not used</li>
+                <li>pybind11: not used</li>
+                <li>TensorRT: not used</li>
+                <li>ONNX Runtime: not used</li>
+                <li>TensorFlow: not used</li>
+                <li>PyTorch: not used</li>
             </ul>
         </div>
     </main>
@@ -147,10 +146,10 @@
                 BSD 3-Clause License
             </p>
             <div>
-                <a href="https://github.com/bniladridas/thread/discussions">Discussions</a>
+                <a href="https://github.com/coccinella-labs/thread/discussions">Discussions</a>
                 <a href="privacy.html">Privacy</a>
                 <a href="terms.html">Terms</a>
-                <a href="https://github.com/bniladridas/thread">GitHub</a>
+                <a href="https://github.com/coccinella-labs/thread">GitHub</a>
             </div>
         </div>
     </footer>

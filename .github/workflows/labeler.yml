@@ -12,17 +12,32 @@ permissions:
 jobs:
   label:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'bniladridas'
+    if: github.repository_owner == 'coccinella-labs'
     steps:
       - uses: actions/checkout@v7
 
       - name: Create labels
         run: |
-          for label in "security:ff6b6b" "docs:74c9fd" "ci:4a9fe8" \
-                       "config:ffd700" "tests:a8d5ff" "refactor:9b59b6" \
-                       "feature:28a745" "bug:e74c3c"; do
-            IFS=':' read -r name color <<< "$label"
-            gh label create "$name" --color "$color" --force 2>/dev/null || true
+          for entry in \
+            "security ff6b6b Security-related changes" \
+            "docs 74c9fd Documentation changes" \
+            "ci 4a9fe8 CI/CD and workflow changes" \
+            "config ffd700 Configuration file changes" \
+            "tests a8d5ff Test-related changes" \
+            "refactor 9b59b6 Refactoring changes" \
+            "feature 28a745 New feature or request" \
+            "bug e74c3c Fixes for bugs" \
+            "emergency dc3545 Emergency hotfix" \
+            "core 95a5a6 Changes under src/core" \
+            "gpu 8e44ad Changes under src/gpu" \
+            "api 16a085 Changes under src/api" \
+            "build 6a737d Build system (CMake) changes" \
+            "python 3572A5 Changes to Python files"; do
+            set -- $entry
+            gh label create "$1" \
+              --color "$2" \
+              --description "$3" \
+              --force 2>/dev/null || true
           done
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
