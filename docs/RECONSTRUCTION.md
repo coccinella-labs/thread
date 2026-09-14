@@ -157,12 +157,40 @@ The README's "What Works Now" table is an accurate honesty ledger of this state 
 
 Two adjacent-commit fingerprints (`64c42e6`+`1c13d45` in the same session; later fix-up pairs) suggest an AI-assisted authoring style: large coherent pieces emitted at once, followed by immediate targeted bug-fix commits. *(Inference, marked.)*
 
-## 12. Evidence vs inference
+## 12. Cleanup audit from PR #163
+
+The cleanup shipped through PR #163 (branch `refactor/tight-structure`, fast-forwarded onto `main`) removed **eight files in total**. Nothing with an active caller was dropped; every deletion has a replacement or a reason, and everything else was moved, not deleted.
+
+| File | Dropped in | Why |
+| :--- | :--- | :--- |
+| `api/__init__.py` | restructure | one-line `# Thread REST API` comment, no code; recreated as `src/api/__init__.py` at the new package location |
+| `cuda.cmake` | `7bd8bf0` | two `option()` lines (`USE_CUDA`, `CUDA_ARCH`); inlined into root `CMakeLists.txt:53-54` |
+| `benchmark.cmake` | `7bd8bf0` | one-file option module; `ENABLE_BENCHMARK*` now directly in `CMakeLists.txt:48-50` |
+| `tests/CMakeLists.txt` | `176e260` | 138 lines absorbed into root `CMakeLists.txt` under `BUILD_TESTING`; test files co-located next to the code they test |
+| `scripts/ci/install_dependencies.sh` | `4577590` | no callers after the restructure; its apt logic is duplicated by `install_dependencies()` in `scripts/setup.sh:75` |
+| `scripts/__init__.py` | `4577590` | empty marker; `scripts.*` imports no longer exist |
+| `cmake/Info.plist.in` | `4577590` | referenced by nothing |
+| `docs/web/startup/avatar.png` | `4577590` | 455 KB; referenced by no page |
+
+Deliberately preserved:
+
+- The GPU "zombie" trio (`src/core/upscaler.cpp`, `src/core/test_upscaler.cpp`, `src/core/include/upscaler.hpp`) and `docs/PROJECT_README.md` were deleted in `f21ad39`, then **restored in `c03df22`** as preserved historical artifacts with a clause pointing at the README. Net zero.
+- All 12 `cloud_gpu/*.cu` kernels, the Metal sources, tests, and shared headers were moved into `src/gpu/`, `src/core/`, `src/api/`, `src/cli/` (39 identifiable renames), not dropped.
+
+Edited rather than deleted:
+
+- `pyproject.toml`: coverage omit dropped nonexistent `config.py` / `config-3.py`.
+- `CHANGELOG.md`: release URL owner corrected to `coccinella-labs`.
+- `.dockerignore`: gained `venv/` and a stray `src/preprocess` binary.
+
+`git diff 9a09a1f..HEAD --diff-filter=D --name-status` reproduces the deletion set; `--diff-filter=R -M` reproduces the moves.
+
+## 13. Evidence vs inference
 
 **Evidence** (verified directly from git and files): all commit messages, dates, and file contents above; the exact `subprocess` command lines and `501/504` handlers in `66c2c67:api/server.py`; the fabricated stitch/job stubs; `MetalUpscaler::upscale()` → CPU; `launchKernel → NotSupported`; `cudart_shim OUTPUT_NAME "cudart"`; the pre/post-cut READMEs and `docs/PROJECT_README.md`; the three tiler behaviors; `WITH_METAL` defaults; `VERSION` downgrade.
 
 **Inference** (flagged in text): that the original API's GPU route was *unrunnable on the author's Mac* (§8), supported by build gating (`USE_CUDA=OFF` default, no CUDA on Apple Silicon) but not by direct observation of a failed run; that the 202/job API was modeled on the remote cloud workflow (§5); that the shim's kernel layer was abandoned rather than deferred by plan (§4); AI-assisted author style (§11).
 
-## 13. Final one-paragraph engineering story
+## 14. Final one-paragraph engineering story
 
 This repository is the product of one builder iterating on a single idea in three acts: it began as **`hybrid-compute`**, an ambitious cross-platform GPU framework whose centerpiece was a CUDA-to-Metal compatibility shim: a real, tested runtime-API skeleton (memory, copies, streams, events) that stopped exactly where the hard part lives (kernel dispatch) and quietly shipped a GPU upscaler in `MetalUpscaler` that always runs on the CPU instead; it then wrapped that framework in a **LivingSocial API-design-guide showcase**, an aspirational 365-line Flask server that shelled out to GPU binaries over `subprocess`, fabricated its `202`-accepted stitches and its "completed" jobs, and could not actually run its own GPU routes on the laptop it was written on; and finally **`f375435` cut it down to what really worked**, renaming it `thread`, downgrading it to 0.1.0, moving the entire pipeline in-process onto pure Python/OpenCV, implementing the stitch the old API had only staged, quieting the 869-line handbook into an honest ledger, and demoting the entire GPU layer (shim, kernels, Metal upscaler, and all) to an optional, unconnected, still-shipped side path that survives to this day as "Thread - CUDA to Metal Shim" in the very CMake file that no longer needs it.
