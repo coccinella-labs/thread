@@ -82,7 +82,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <p>Thread is a small image processing project.</p>
+                <blockquote>
+<p><strong>Historical document.</strong> This file is a preserved earlier readme that once
+served as the project README. It is kept for the record and is not updated
+with current details. See the repository root <code>README.md</code> for the current
+state of the project.</p>
+</blockquote>
+<p>Thread is a small image processing project.</p>
 <p>It splits images into tiles, upscales them, and stitches them back together. The CPU path is the default path. CUDA and Metal are optional.</p>
 <p>The repo also has a small HTTP API for the same flow.</p>
 <p><strong>Workflow</strong></p>
@@ -114,7 +120,7 @@ For containerized environments:</p>
 <li><strong>CUDA GPU components</strong> (requires NVIDIA GPU):
   <code>bash
   docker build -f Dockerfile.cuda -t thread-cuda .
-  docker run --rm --gpus all -v /path/to/tiles:/app/tiles thread-cuda ./cloud_gpu/upscaler tiles/input_tile.jpg tiles/output_tile.jpg</code></li>
+  docker run --rm --gpus all -v /path/to/tiles:/app/tiles thread-cuda ./src/gpu/cuda/upscaler tiles/input_tile.jpg tiles/output_tile.jpg</code></li>
 </ul>
 <p><strong>Manual Setup</strong></p>
 <p><strong>macOS</strong></p>
@@ -138,7 +144,7 @@ pip install -r requirements.txt
 </code></pre>
 <p><strong>Cloud GPU</strong></p>
 <pre><code class="language-bash"># On cloud instance with CUDA
-cd cloud_gpu
+cd src/gpu/cuda
 nvcc upscale.cu -o upscaler -I/usr/include/opencv4 -lopencv_core -lopencv_imgcodecs
 </code></pre>
 <p><strong>Usage</strong></p>
@@ -150,13 +156,13 @@ To build, test, and run e2e locally:</p>
 For detailed testing instructions, see TESTING.md[^1].</p>
 <p>To run unit tests (parallel execution enabled for faster runs):</p>
 <pre><code class="language-bash"># Python tests (parallel with pytest-xdist)
-python3 -m pytest tests/
+python3 -m pytest src
 # C/C++ tests (parallel with ctest)
 cd build &amp;&amp; ctest -j$(nproc)
 # Run benchmark test specifically (verbose output, tests Metal shim performance)
 cd build &amp;&amp; ctest -R user_counters_tabular_test -V
 # End-to-end tests
-python3 scripts/e2e.py
+python3 src/cli/e2e.py
 </code></pre>
 <p><strong>Manual Usage</strong></p>
 <ol>
@@ -176,24 +182,24 @@ python3 scripts/e2e.py
 <li><strong>Upscale tiles on cloud</strong>:
    ```bash
    # Single tile
-   cd cloud_gpu &amp;&amp; ./upscaler input_tile.jpg output_tile.jpg 2</li>
+   cd src/gpu/cuda &amp;&amp; ./upscaler input_tile.jpg output_tile.jpg 2</li>
 </ol>
 <p># Batch process all tiles
    ./scripts/batch_upscale.sh tiles upscaled 2 "*.jpg"
    <code>4. **Stitch upscaled tiles** with flexible grid dimensions:</code>bash
    # Auto-detect square grid
-   python3 scripts/stitch.py path/to/upscaled_tiles/ output_image.jpg</p>
+   python3 src/cli/stitch.py path/to/upscaled_tiles/ output_image.jpg</p>
 <p># Specify custom grid dimensions
-   python3 scripts/stitch.py path/to/upscaled_tiles/ output_image.jpg --rows 2 --cols 8</p>
+   python3 src/cli/stitch.py path/to/upscaled_tiles/ output_image.jpg --rows 2 --cols 8</p>
 <p># Use custom file pattern
-   python3 scripts/stitch.py path/to/upscaled_tiles/ output_image.jpg --pattern "upscaled_*.png"
+   python3 src/cli/stitch.py path/to/upscaled_tiles/ output_image.jpg --pattern "upscaled_*.png"
    ```</p>
 <p><strong>Verification</strong>
 To ensure the project components work correctly:</p>
 <ul>
 <li><strong>CUDA Build Check</strong>: Run <code>scripts/check_cuda_build.sh</code> on a CUDA-enabled system to verify <code>upscale.cu</code> compiles without errors.</li>
-<li><strong>Local E2E Testing</strong>: The <code>scripts/run.sh</code> script simulates the full pipeline (tiling -&gt; copy tiles -&gt; stitching) without actual upscaling or GPU hardware. <code>scripts/e2e.py</code> provides additional end-to-end validation.</li>
-<li><strong>Code Review</strong>: Manually inspect <code>cloud_gpu/upscale.cu</code> for CUDA best practices and logic correctness.</li>
+<li><strong>Local E2E Testing</strong>: The <code>scripts/run.sh</code> script simulates the full pipeline (tiling -&gt; copy tiles -&gt; stitching) without actual upscaling or GPU hardware. <code>src/cli/e2e.py</code> provides additional end-to-end validation.</li>
+<li><strong>Code Review</strong>: Manually inspect <code>src/gpu/cuda/upscale.cu</code> for CUDA best practices and logic correctness.</li>
 <li><strong>Troubleshooting</strong>: If you encounter build or test issues, see <a href="../TROUBLESHOOTING/">TROUBLESHOOTING.md</a>[^4] for common problems and solutions.</li>
 </ul>
 <p><strong>Git Commit Standards</strong>
@@ -243,13 +249,13 @@ chmod +x .git/hooks/commit-msg
 git push --force origin main  # if needed
 </code></pre>
 <p><strong>License</strong>
-Copyright (c) 2026, bniladridas. All rights reserved.</p>
+Copyright (c) 2026, Coccinella Labs. All rights reserved.</p>
 <p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions
 are met:
   * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in
     the documentation and/or other materials provided with the distribution.
-  * Neither the name of bniladridas nor the names of its contributors may be used to endorse or promote products derived
+  * Neither the name of Coccinella Labs nor the names of its contributors may be used to endorse or promote products derived
     from this software without specific prior written permission.</p>
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.

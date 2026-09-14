@@ -242,14 +242,14 @@ open coverage/index.html
 <h2 id="writing-tests">Writing Tests</h2>
 <h3 id="unit-tests_1">Unit Tests</h3>
 <ul>
-<li>Place unit tests in <code>tests/unit/</code></li>
+<li>Place unit tests next to the code they exercise under <code>src/</code> (e.g. <code>src/gpu/metal/test_shim.cpp</code>)</li>
 <li>Use Google Test framework</li>
 <li>Test files should be named <code>test_*.cpp</code></li>
 <li>Test cases should be small and focused</li>
 </ul>
 <h3 id="benchmark-tests">Benchmark Tests</h3>
 <ul>
-<li>Place benchmark tests in <code>tests/performance/</code></li>
+<li>Place benchmark tests next to the code they exercise under <code>src/</code> (e.g. <code>src/gpu/metal/benchmark.cpp</code>)</li>
 <li>Use Google Benchmark framework</li>
 <li>Test files should be named <code>benchmark_*.cpp</code></li>
 <li>Include a range of input sizes</li>

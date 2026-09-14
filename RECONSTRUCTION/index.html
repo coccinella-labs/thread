@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Thread: Repository Reconstruction - Thread</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Thread: Repository Reconstruction";
+        var mkdocs_page_input_path = "RECONSTRUCTION.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Thread
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../ONBOARDING/">Onboarding</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../TESTING/">Testing</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../CI/">CI</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../TROUBLESHOOTING/">Troubleshooting</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Thread</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Thread: Repository Reconstruction</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="thread-repository-reconstruction">Thread: Repository Reconstruction</h1>
+<p><em>A durable technical record of what this repository is, what it was, and how it got from there to here. Written for anyone who must understand the codebase from scratch: a replacement for a long lost conversation.</em></p>
+<blockquote>
+<p>Scope note: this is a <strong>post-hoc forensic reconstruction</strong> from git history and <code>HEAD @ 9a09a1f</code>, not an official project document. It is deliberately honest about what does and does not work. Where a claim is inference rather than evidence, it is flagged as such.</p>
+</blockquote>
+<hr />
+<h2 id="1-origin-and-evolution-hybrid-compute-thread">1. Origin and evolution: <code>hybrid-compute</code> → <code>thread</code></h2>
+<p>The repository was imported as <strong><code>hybrid-compute</code></strong> on <strong>2025-10-04</strong> (<code>cd81c9d</code> <em>"update hybrid-compute: upscaling, gpu, tests"</em>) and spent six months as a GPU-acceleration project before being reframed as <strong><code>thread</code></strong>, a CPU-first image pipeline, on <strong>2026-05-28</strong> (<code>f375435</code>, the MVP cut).</p>
+<p>The project name described its ambition: <em>hybrid</em> compute, the same CUDA-style source running on NVIDIA GPUs (Linux/Windows) <em>and</em> Apple Silicon via a Metal back-end. The pre-cut <code>docs/PROJECT_README.md</code> states it explicitly:</p>
+<blockquote>
+<p><em>"Hybrid-compute is a cross-platform GPU-accelerated image processing framework with a CUDA-to-Metal compatibility shim. It enables CUDA-based operations on macOS (Apple Silicon) via Metal."</em></p>
+</blockquote>
+<p>The intended usage workflow at that point was <strong>Split → Transfer + Upscale in the cloud → Stitch</strong>. The GPU work was always conceived as a <em>separate</em> (cloud) component, never an in-process part of a local web app.</p>
+<p>By <code>HEAD</code>, that original identity survives mostly as residue: <code>CMakeLists.txt</code> still describes the project as <strong>"Thread - CUDA to Metal Shim"</strong>, and the entire Metal/CUDA layer remains in the tree, gated off and optional.</p>
+<h2 id="2-original-api-execution-model">2. Original API execution model</h2>
+<p>The REST API was born on <strong>2026-02-19</strong> (<code>66c2c67</code> <em>"feat: rest api server with livingsocial design guide (#74)"</em>) as <code>api/server.py</code> (365 lines). It was a thin HTTP shell over <strong>compiled native binaries invoked via <code>subprocess</code></strong> rather than a self-contained server:</p>
+<ul>
+<li><strong>Upload / list / download / tile route:</strong> `subprocess.run(["./preprocess", source_dir+"/", tiles_dir+"/"], capture_output=True, text=True, timeout=60), the C++/OpenCV tiler.</li>
+<li><strong>Upscale route:</strong> `subprocess.run(["./cloud_gpu/upscaler", source_file, output_file, str(scale)], timeout=120), the CUDA binary.</li>
+<li><strong>Stitch route:</strong> <strong>was never implemented.</strong> <code>stitch_tiles()</code> returned <code>{"job_id": …, "status": "processing"}</code> and did nothing. <code>get_job_status()</code> <em>hardcoded</em> `{"status": "completed", "result": "/v1/outputs/<job_id>/result.png"}, a fabricated URL pointing at a file that could never exist.</li>
+<li>Server defaults: <code>UPLOAD_FOLDER=/tmp/hybrid-compute/uploads</code>, <code>OUTPUT_FOLDER=/tmp/hybrid-compute/output</code>, <code>app.run(host="0.0.0.0", port=5000, debug=True)</code>.</li>
+</ul>
+<p>Error handling was honest about the dependency: missing binaries surfaced as <strong><code>501 Not Available</code></strong> ("Please build the CUDA upscaler") and timeouts as <strong><code>504</code></strong>.</p>
+<p>The whole API was framed as a <em>design guide</em> exercise: the pre-cut README was titled <strong>"Hybrid Compute API Design Guide, Version 1.0.0, Published 2026 Feb 19"</strong> (869 lines of LivingSocial-Api-Documentation content: SQUUIDs, HAL, versioning, pagination). The API is best read as an aspirational reference implementation of that guide, not as production software.</p>
+<h2 id="3-cuda-and-metal-architecture">3. CUDA and Metal architecture</h2>
+<p>Two parallel GPU stacks were built, neither of which ever reached a working image-producing path by default:</p>
+<p><strong>CUDA (<code>cloud_gpu/</code>, 12 kernels).</strong> <code>cloud_gpu/upscale.cu</code> is a standalone OpenCV-linked binary (<code>upscale</code>) with a bicubic kernel, a Catmull-Rom variant, and a CPU OpenMP fallback. Sibling files (<code>filters.cu</code>, <code>rotation.cu</code>, <code>blend.cu</code>, …) form a library of image operations with no HTTP API exposure. Everything in <code>cloud_gpu/</code> is compiled only under <code>USE_CUDA=ON</code> (default <strong>OFF</strong>, <code>cuda.cmake:2</code>, target archs <code>75;80;86</code>).</p>
+<p><strong>Metal (<code>src/metal/</code>).</strong> <code>MetalUpscaler</code> is selected by <code>Upscaler::create()</code> (<code>src/upscaler.cpp:34-52</code>: Metal → CUDA → <code>throw std::runtime_error("No suitable upscaler available")</code>). Critically, <code>MetalUpscaler::upscale()</code> (<code>src/metal/MetalUpscaler.cpp:166</code>) <strong>always calls the CPU <code>bilinearUpscale()</code></strong> (<code>:177</code>). Its own Metal shader <code>Upscale.metal</code> (kernel <code>upscaleBilinear</code>, <code>:7</code>) is compiled into <code>shaders/default.metallib</code> but <strong>never dispatched</strong>: there is no <code>computePipelineState</code>. The Metal path is GPU-<em>capable</em> only in the sense that it links Metal; it never accelerates anything.</p>
+<p>The shared factory abstraction (<code>include/upscaler.hpp</code>) is used <strong>nowhere in the API</strong>: <code>api/server.py</code> performs upscaling directly with <code>cv2.resize(..., INTER_CUBIC)</code>. The GPU abstraction is a zombie: fully built, never load-bearing.</p>
+<h2 id="4-the-cuda-to-metal-shim-and-its-actual-implementation-boundary">4. The CUDA-to-Metal shim and its actual implementation boundary</h2>
+<p>The shim (<code>include/cuda_shim.h</code> + <code>src/metal/MetalShim.mm</code>) is the <strong>most substantial artifact in the repository</strong> and was the heart of the original "hybrid compute" concept.</p>
+<p><strong>Intent:</strong> provide the CUDA Runtime API surface (<code>cudaError_t</code>, <code>cudaMemcpyKind</code>, <code>cudaMalloc</code>, <code>cudaMemcpy</code>, <code>cudaStream*</code>, <code>cudaEvent*</code>) backed by Metal, so that CUDA-style source compiles and runs unmodified on Apple Silicon. Evidence of intent:</p>
+<ul>
+<li><code>cuda_shim.h</code> mirrors CUDA error enums (<code>:10-19</code>), declares function pointers, and <code>#define</code>s redirect <code>cudaMalloc → cudaMallocPtr</code> (<code>:128</code>).</li>
+<li><code>CMakeLists.txt:391</code> builds <code>cudart_shim</code> as a SHARED library with <code>OUTPUT_NAME "cudart"</code>, so <code>-lcudart</code> binds to the Metal back-end on macOS.</li>
+<li><code>tests/test_metal_shim.cu</code> contains a <strong>real CUDA kernel</strong> (<code>vectorAdd&lt;&lt;&lt;blocks,threads,0,stream&gt;&gt;&gt;</code> with async copies, streams, events), a demonstration that a CUDA program would run through the shim.</li>
+</ul>
+<p><strong>Actual implementation boundary (what is real vs not)</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Layer</th>
+<th style="text-align: left;">Status</th>
+<th style="text-align: left;">Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Memory model</td>
+<td style="text-align: left;"><strong>Real</strong></td>
+<td style="text-align: left;"><code>MTLBuffer</code> (shared storage) alloc/free; pointer registry (<code>MetalShim.mm:89</code>), malloc via <code>MTLResourceStorageModeShared</code> (<code>:218</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Host↔device copies</td>
+<td style="text-align: left;"><strong>Real</strong></td>
+<td style="text-align: left;">H2D / D2H / D2D <code>memcpy</code> (<code>MetalShim.mm:298-316</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Memset</td>
+<td style="text-align: left;">Real</td>
+<td style="text-align: left;">Padded/partial-coverage logic</td>
+</tr>
+<tr>
+<td style="text-align: left;">Streams</td>
+<td style="text-align: left;"><strong>Real</strong></td>
+<td style="text-align: left;">Per-stream <code>MTLCommandQueue</code>; launch queue per stream</td>
+</tr>
+<tr>
+<td style="text-align: left;">Events / sync</td>
+<td style="text-align: left;"><strong>Real</strong></td>
+<td style="text-align: left;"><code>MTLSharedEvent</code>-based <code>cudaStreamSynchronize</code>, <code>cudaEventRecord/ElapsedTime</code> (<code>:326-371</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Kernel dispatch</td>
+<td style="text-align: left;"><strong>NOT implemented</strong></td>
+<td style="text-align: left;"><code>launchKernel()</code> returns <code>cudaErrorNotSupported</code> (<code>MetalShim.mm:536-542</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Full CUDA coverage</td>
+<td style="text-align: left;"><strong>NOT implemented</strong></td>
+<td style="text-align: left;">Only the subset a hand-written runtime would need</td>
+</tr>
+</tbody>
+</table>
+<p>The shim is, in short, a <strong>complete runtime-API skeleton with a correct memory/sync model, whose kernel-dispatch layer was never built.</strong> Correctness fixes were layered in while the project was active (<code>1c13d45</code>, a retain/double-free fix seconds after <code>64c42e6</code>, and <code>27c9cb2</code>, an async race and bounds check), and it is covered by unit tests (<code>tests/unit/test_metal_shim.cpp</code>, alloc/copy round-trips) and even a benchmark (<code>tests/performance/benchmark_metal_shim.cpp</code>). The kernel-translation problem (the hard 80%: turning CUDA kernels into Metal compute pipelines) stopped being worked on once the project pivoted, and the layer-out writers moved on.</p>
+<h2 id="5-remote-gpu-execution-model">5. Remote GPU execution model</h2>
+<p>The repository documents a <strong>cloud-worker</strong> deploy path in parallel with local usage. The <code>cloud_gpu</code> binaries were never meant to be in-process with the API; they were built to run on an NVIDIA GPU box (or container) over the network:</p>
+<ul>
+<li><code>scripts/transfer_tiles.sh</code>: scp local tiles to a cloud host, ssh in, <code>nvcc cloud_gpu/upscale.cu -o upscaler</code> (against a full OpenCV toolchain), run, scp results back. Pre-cut defaults pointed at <code>/home/ubuntu/HybridCompute</code>; the script includes input-validation hardening (injection/option-injection checks) added around <code>438fa6b</code> (2026-01-27).</li>
+<li><code>scripts/batch_upscale.sh</code>: <code>UPSCALER=./upscaler</code> over a tile directory; error-checks the binary and input pattern.</li>
+<li><code>Dockerfile.cuda</code>: GPU container; CI (<code>ci.yml</code>) publishes image variants (<code>thread-gpu</code>) and CI includes CUDA/WSL jobs.</li>
+</ul>
+<p>The API's <code>202 + job_id</code> async shape was modeling exactly this: upload → tile locally → ship tiles to the GPU box → poll job → collect. It was a remote-workflow UI that never got a real remote end-point wired to it (the "job" was fabricated, §2).</p>
+<h2 id="6-the-f375435-mvp-cut">6. The <code>f375435</code> MVP cut</h2>
+<p>Commit <strong><code>f375435</code></strong> (2026-05-28, <em>"chore: prepare thread mvp (#148)"</em>) is the single most consequential commit. Its own message is the thesis: <em>"This repo needed the active image flow to match the current Thread direction. Made setup CPU-first. CUDA, Metal, and native OpenCV are now optional."</em></p>
+<p>What it changed:</p>
+<ul>
+<li><strong>Removed</strong> <code>import subprocess</code> from <code>api/server.py</code>; replaced both native-binary invocations with in-process Python <code>cv2</code>. Tiling became <code>split_image()</code> (clamped edge tiles via <code>min()</code>), upscaling became <code>cv2.resize(..., INTER_CUBIC)</code>.</li>
+<li><strong>Implemented what the old API only staged</strong>: real <code>stitch_image()</code> + <code>determine_grid()</code> (hconcat/vconcat with row normalization), real job records under in-memory <code>JOBS</code>, replacing the fabricated "completed" stub. <strong>The MVP cut added the one real feature the Feb API had faked.</strong></li>
+<li><strong>Hardened validation</strong>: <code>parse_positive_int</code>, <code>MAX_PAGE_LIMIT=100</code>, <code>is_safe_id</code> on every resource, <code>secure_filename</code> on outputs (later <code>033e6b1</code>/<code>784b044</code> closed the <code>image_id</code> path-traversal hole).</li>
+<li><strong>Renamed the project</strong> <code>hybrid-compute</code> → <code>thread</code> at every level: <code>project()</code> in CMake, <code>com.hybridcompute.metalshim</code> → <code>com.thread.metalshim</code> dispatch-queue label in <code>src/metal/MetalShim.mm</code> (the <em>only</em> core-source change in the entire cut), folder defaults <code>/tmp/hybrid-compute/*</code> → <code>/tmp/thread/*</code> in the server.</li>
+<li><strong>Downgraded the version</strong> from <code>1.0.0</code> to <code>0.1.0</code> (<code>VERSION</code> file): an honest "this is once again an MVP" signal. The CMake project <em>description</em> string stayed "…CUDA to Metal Shim" (residue).</li>
+<li><strong>Quieted the documentation</strong>: the 869-line "Hybrid Compute API Design Guide" README and marketing <code>docs/web/*.html</code> were replaced with the terse "a small, well-lit room" README and the "What Works Now" honesty ledger. <code>docs/PROJECT_README.md</code> was rewritten from "cross-platform GPU-accelerated framework" to "Thread is a small image processing project. … The CPU path is the default path."</li>
+<li><strong>Only two files were <em>added</em> in the whole commit</strong>: <code>.github/thread-flow.png</code> (the stitch identity) and <code>tests/test_api_server.py</code> (the regression suite for the new server).</li>
+</ul>
+<p><strong>Nothing GPU-related was deleted.</strong> <code>cloud_gpu/</code>, <code>src/metal/</code>, <code>cuda_shim.h</code>, <code>cudart_shim</code>, and <code>Upscale.metal</code> all survived the cut. The cut <em>decoupled</em> the API from the GPU layer; it did not remove the layer.</p>
+<h2 id="7-cpu-first-architecture-after-the-cut">7. CPU-first architecture after the cut</h2>
+<p>At <code>HEAD</code>, the functional product is entirely CPU/Python:</p>
+<pre><code>Upload (Flask, HAL)  →  split_image()      →  resize_image()/cv2   →  stitch_image()  →  outputs/
+                      (tiles, clamped)          (INTER_CUBIC)          (h/vconcat)     /v1/outputs/
+</code></pre>
+<ul>
+<li><code>api/server.py</code>: Flask, HAL every response, pagination capped at <code>MAX_PAGE_LIMIT</code>, in-memory <code>JOBS</code>. Routes: upload/list/get/download image → create/list tiles → per-tile upscale and download → stitch/batch/join → final output download under <code>/v1/outputs/</code>.</li>
+<li>Native CPU tools retained: <code>src/preprocess_c.c</code> (stb_image tiler, always built, <code>CMakeLists.txt:810</code>) is the correct partial-edge tiler used by <code>scripts/e2e.py</code> and CLI; <code>build/bin/preprocess</code> (OpenCV C++, <code>WITH_OPENCV</code>) remains.</li>
+<li>CLI path: <code>scripts/e2e.py</code>: preprocess with <code>preprocess_c</code>, then try <code>build/bin/upscale</code> (GPU build) and fall back to <code>cv2.INTER_CUBIC</code> (<code>:52-64</code>).</li>
+<li><code>scripts/stitch.py</code>: stand-alone stitcher with a CLAHE enhancement path (grayscale) that <strong>diverges</strong> from the API's color <code>cv2.hconcat/vconcat</code>.</li>
+</ul>
+<h2 id="8-the-macos-501504-nuance">8. The macOS <code>501/504</code> nuance</h2>
+<p>In the original design there was a gap between <strong>intended architecture</strong> and <strong>what could actually run on the author's machine</strong> (a macOS Apple Silicon laptop per <code>DEVELOPMENT.md</code>/<code>setup.sh</code> conventions):</p>
+<ul>
+<li>The API's upscale route pointed at <code>./cloud_gpu/upscaler</code>, but that binary only builds under real CUDA (<code>USE_CUDA=ON</code>, nvcc + Toolkit), which is <strong>OFF by default</strong> (<code>cuda.cmake:2</code>) and does not exist on Apple Silicon.</li>
+<li>The tiler <code>./preprocess</code> (OpenCV C++ version) similarly only appears under <code>WITH_OPENCV</code>.</li>
+<li>Therefore, out of the box on macOS, the original API's tile and upscale routes would raise <code>FileNotFoundError</code> → <strong><code>501 Not Available</code></strong> (or a <code>504</code> timeout if a stale binary hung), no matter what the workflow said.</li>
+</ul>
+<p>The post-cut CPU-first server removes this gap entirely: <code>python api/server.py</code> works with nothing but <code>pip</code> dependencies. This is the single clearest example of the cut's goal: <strong>the API was made runnable exactly where the author actually worked.</strong></p>
+<h2 id="9-current-runtime-truth-head">9. Current runtime truth (<code>HEAD</code>)</h2>
+<p>What actually works, end to end, with default settings:</p>
+<ul>
+<li><strong>CPU pipeline</strong>: <code>python api/server.py</code> → upload → tile (cv2) → upscale (cv2, INTER_CUBIC) → stitch (cv2) → download. Fully functional; tested (<code>tests/test_api_server.py</code>).</li>
+<li><strong>Native CPU tiler</strong>: <code>preprocess_c</code> (stb_image) builds and tiles correctly, including partial edges.</li>
+<li><strong>GPU</strong>: does <strong>not</strong> accelerate anything today. <code>MetalUpscaler::upscale()</code> is CPU bilinear; <code>Upscale.metal</code> is compiled but never dispatched; <code>launchKernel</code> returns <code>NotSupported</code>; the CUDA path requires an NVIDIA toolchain not present on the author's platform. GPU artifacts build as <em>optional</em> libraries/binaries but produce no GPU-computed pixels.</li>
+</ul>
+<p>The README's "What Works Now" table is an accurate honesty ledger of this state (<strong>CUDA/Metal = <em>Optional</em></strong>). The default path is CPU, and the CPU path is enough to see the whole product.</p>
+<h2 id="10-current-architectural-seams-and-unfinished-pieces">10. Current architectural seams and unfinished pieces</h2>
+<ul>
+<li><strong><code>WITH_METAL</code> default mismatch</strong>: <code>CMakeLists.txt:39</code> defaults <code>WITH_METAL=ON</code>, while the README and <code>scripts/run.sh:46</code> treat it as OFF. On a default macOS build, Metal is compiled for no functional gain.</li>
+<li><strong>Three divergent tilers</strong>: Python <code>split_image()</code> (clamped), <code>preprocess_c.c</code> (correct), C++ <code>include/utils.hpp</code> <code>Rect(x,y,tile_size,tile_size)</code> with an <strong>un-clamped out-of-bounds bug</strong> (<code>utils.hpp:5-13</code>). The Python one is what the API uses; the C one is what e2e uses; the C++ one is latent.</li>
+<li><strong><code>Mystitht</code> divergence</strong>: <code>scripts/stitch.py</code> runs a CLAHE (grayscale) enhancement path that the API stitcher does not; results differ by path.</li>
+<li><strong>Zombie GPU abstraction</strong>: <code>Upscaler::create()</code> (Metal→CUDA→throw) is never called from the API; the 12 <code>cloud_gpu</code> kernels have no API exposure; the Metal shim can't dispatch kernels.</li>
+<li><strong>CMake duplication</strong> (reachitecture artifacts): Metal <code>find_library</code> at <code>:55</code> and <code>:108</code>, <code>xcrun metal</code> at <code>:259</code> and <code>:372</code>, OpenCV discovery at <code>:504</code> and <code>:669</code>; duplicate <code>cudaStreamSynchronizePtr</code> in <code>MetalShim.mm:874</code>/<code>:880</code>.</li>
+<li><strong><code>docs/COMPATIBILITY.md</code> dead-end</strong>: documents Eigen, pybind11, TensorRT, ONNX, PyTorch as required/optional dependencies that were never added.</li>
+<li><strong>Job model</strong>: in-memory dict; operations execute synchronously yet return <code>202</code>; no persistence, no auth.</li>
+<li><strong>CHANGELOG.md</strong>: reduced to a pointer to GitHub Releases.</li>
+<li><strong>Name residue</strong>: CMake description <em>"Thread - CUDA to Metal Shim"</em>; release/CI artifacts and image tags still carry <code>hybrid-compute</code>/<code>thread-gpu</code> naming.</li>
+</ul>
+<h2 id="11-git-history-timeline">11. Git-history timeline</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Date</th>
+<th style="text-align: left;">Commit</th>
+<th style="text-align: left;">Significance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">2025-10-04</td>
+<td style="text-align: left;"><code>cd81c9d</code></td>
+<td style="text-align: left;">Import as <code>hybrid-compute</code>; CUDA upscaler, GPU tests, BSD-3 license from day one</td>
+</tr>
+<tr>
+<td style="text-align: left;">2025-10-24</td>
+<td style="text-align: left;"><code>64c42e6</code></td>
+<td style="text-align: left;"><strong>Design commit</strong>: Metal/CUDA back-ends (<code>cuda_shim.h</code>, <code>MetalShim.mm</code> (725 lines), <code>Upscale.metal</code>, <code>test_metal_shim.cu</code>, factory, benchmark, docs; 2,475 insertions)</td>
+</tr>
+<tr>
+<td style="text-align: left;">2025-10-24</td>
+<td style="text-align: left;"><code>1c13d45</code></td>
+<td style="text-align: left;">Immediate shim memory-management fix (retain/double-release)</td>
+</tr>
+<tr>
+<td style="text-align: left;">2025-10-24</td>
+<td style="text-align: left;"><code>dd77899</code></td>
+<td style="text-align: left;"><code>preprocess_c</code> moved outside <code>WITH_OPENCV</code> (CPU tiler always builds)</td>
+</tr>
+<tr>
+<td style="text-align: left;">2025-10-24</td>
+<td style="text-align: left;"><code>6853c4f</code></td>
+<td style="text-align: left;"><code>cuda.cmake</code> extracted</td>
+</tr>
+<tr>
+<td style="text-align: left;">2025-10-28</td>
+<td style="text-align: left;"><code>27c9cb2</code></td>
+<td style="text-align: left;">Shim async-race fix + bounds checks</td>
+</tr>
+<tr>
+<td style="text-align: left;">2026-01-27</td>
+<td style="text-align: left;"><code>438fa6b</code></td>
+<td style="text-align: left;">Batch upscaling + flexible stitching; <code>transfer_tiles.sh</code> hardening</td>
+</tr>
+<tr>
+<td style="text-align: left;">2026-02-19</td>
+<td style="text-align: left;"><code>66c2c67</code></td>
+<td style="text-align: left;">REST API with subprocess–GPU execution model + 869-line LivingSocial API Design Guide</td>
+</tr>
+<tr>
+<td style="text-align: left;">2026-05-28</td>
+<td style="text-align: left;"><code>f375435</code></td>
+<td style="text-align: left;"><strong>MVP cut</strong>: CPU-first <code>thread</code> 0.1.0, API→pure <code>cv2</code>, real stitch, docs quieted</td>
+</tr>
+<tr>
+<td style="text-align: left;">post-cut</td>
+<td style="text-align: left;"><code>4507f76</code></td>
+<td style="text-align: left;">Port + route fixes (#113)</td>
+</tr>
+<tr>
+<td style="text-align: left;">post-cut</td>
+<td style="text-align: left;"><code>033e6b1</code>/<code>784b044</code></td>
+<td style="text-align: left;"><code>image_id</code> path-traversal validation</td>
+</tr>
+<tr>
+<td style="text-align: left;">post-cut</td>
+<td style="text-align: left;"><code>c4eee8c</code></td>
+<td style="text-align: left;">Flask debug-mode hard-coding fix</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>HEAD</code></td>
+<td style="text-align: left;"><code>9a09a1f</code></td>
+<td style="text-align: left;">Documentation header-image pointer (#162)</td>
+</tr>
+</tbody>
+</table>
+<p>Two adjacent-commit fingerprints (<code>64c42e6</code>+<code>1c13d45</code> in the same session; later fix-up pairs) suggest an AI-assisted authoring style: large coherent pieces emitted at once, followed by immediate targeted bug-fix commits. <em>(Inference, marked.)</em></p>
+<h2 id="12-cleanup-audit-from-pr-163">12. Cleanup audit from PR #163</h2>
+<p>The cleanup shipped through PR #163 (branch <code>refactor/tight-structure</code>, fast-forwarded onto <code>main</code>) removed <strong>eight files in total</strong>. Nothing with an active caller was dropped; every deletion has a replacement or a reason, and everything else was moved, not deleted.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">File</th>
+<th style="text-align: left;">Dropped in</th>
+<th style="text-align: left;">Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>api/__init__.py</code></td>
+<td style="text-align: left;">restructure</td>
+<td style="text-align: left;">one-line <code># Thread REST API</code> comment, no code; recreated as <code>src/api/__init__.py</code> at the new package location</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cuda.cmake</code></td>
+<td style="text-align: left;"><code>7bd8bf0</code></td>
+<td style="text-align: left;">two <code>option()</code> lines (<code>USE_CUDA</code>, <code>CUDA_ARCH</code>); inlined into root <code>CMakeLists.txt:53-54</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>benchmark.cmake</code></td>
+<td style="text-align: left;"><code>7bd8bf0</code></td>
+<td style="text-align: left;">one-file option module; <code>ENABLE_BENCHMARK*</code> now directly in <code>CMakeLists.txt:48-50</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>tests/CMakeLists.txt</code></td>
+<td style="text-align: left;"><code>176e260</code></td>
+<td style="text-align: left;">138 lines absorbed into root <code>CMakeLists.txt</code> under <code>BUILD_TESTING</code>; test files co-located next to the code they test</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>scripts/ci/install_dependencies.sh</code></td>
+<td style="text-align: left;"><code>4577590</code></td>
+<td style="text-align: left;">no callers after the restructure; its apt logic is duplicated by <code>install_dependencies()</code> in <code>scripts/setup.sh:75</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>scripts/__init__.py</code></td>
+<td style="text-align: left;"><code>4577590</code></td>
+<td style="text-align: left;">empty marker; <code>scripts.*</code> imports no longer exist</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cmake/Info.plist.in</code></td>
+<td style="text-align: left;"><code>4577590</code></td>
+<td style="text-align: left;">referenced by nothing</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>docs/web/startup/avatar.png</code></td>
+<td style="text-align: left;"><code>4577590</code></td>
+<td style="text-align: left;">455 KB; referenced by no page</td>
+</tr>
+</tbody>
+</table>
+<p>Deliberately preserved:</p>
+<ul>
+<li>The GPU "zombie" trio (<code>src/core/upscaler.cpp</code>, <code>src/core/test_upscaler.cpp</code>, <code>src/core/include/upscaler.hpp</code>) and <code>docs/PROJECT_README.md</code> were deleted in <code>f21ad39</code>, then <strong>restored in <code>c03df22</code></strong> as preserved historical artifacts with a clause pointing at the README. Net zero.</li>
+<li>All 12 <code>cloud_gpu/*.cu</code> kernels, the Metal sources, tests, and shared headers were moved into <code>src/gpu/</code>, <code>src/core/</code>, <code>src/api/</code>, <code>src/cli/</code> (39 identifiable renames), not dropped.</li>
+</ul>
+<p>Edited rather than deleted:</p>
+<ul>
+<li><code>pyproject.toml</code>: coverage omit dropped nonexistent <code>config.py</code> / <code>config-3.py</code>.</li>
+<li><code>CHANGELOG.md</code>: release URL owner corrected to <code>coccinella-labs</code>.</li>
+<li><code>.dockerignore</code>: gained <code>venv/</code> and a stray <code>src/preprocess</code> binary.</li>
+</ul>
+<p><code>git diff 9a09a1f..HEAD --diff-filter=D --name-status</code> reproduces the deletion set; <code>--diff-filter=R -M</code> reproduces the moves.</p>
+<h2 id="13-evidence-vs-inference">13. Evidence vs inference</h2>
+<p><strong>Evidence</strong> (verified directly from git and files): all commit messages, dates, and file contents above; the exact <code>subprocess</code> command lines and <code>501/504</code> handlers in <code>66c2c67:api/server.py</code>; the fabricated stitch/job stubs; <code>MetalUpscaler::upscale()</code> → CPU; <code>launchKernel → NotSupported</code>; <code>cudart_shim OUTPUT_NAME "cudart"</code>; the pre/post-cut READMEs and <code>docs/PROJECT_README.md</code>; the three tiler behaviors; <code>WITH_METAL</code> defaults; <code>VERSION</code> downgrade.</p>
+<p><strong>Inference</strong> (flagged in text): that the original API's GPU route was <em>unrunnable on the author's Mac</em> (§8), supported by build gating (<code>USE_CUDA=OFF</code> default, no CUDA on Apple Silicon) but not by direct observation of a failed run; that the 202/job API was modeled on the remote cloud workflow (§5); that the shim's kernel layer was abandoned rather than deferred by plan (§4); AI-assisted author style (§11).</p>
+<h2 id="14-final-one-paragraph-engineering-story">14. Final one-paragraph engineering story</h2>
+<p>This repository is the product of one builder iterating on a single idea in three acts: it began as <strong><code>hybrid-compute</code></strong>, an ambitious cross-platform GPU framework whose centerpiece was a CUDA-to-Metal compatibility shim: a real, tested runtime-API skeleton (memory, copies, streams, events) that stopped exactly where the hard part lives (kernel dispatch) and quietly shipped a GPU upscaler in <code>MetalUpscaler</code> that always runs on the CPU instead; it then wrapped that framework in a <strong>LivingSocial API-design-guide showcase</strong>, an aspirational 365-line Flask server that shelled out to GPU binaries over <code>subprocess</code>, fabricated its <code>202</code>-accepted stitches and its "completed" jobs, and could not actually run its own GPU routes on the laptop it was written on; and finally <strong><code>f375435</code> cut it down to what really worked</strong>, renaming it <code>thread</code>, downgrading it to 0.1.0, moving the entire pipeline in-process onto pure Python/OpenCV, implementing the stitch the old API had only staged, quieting the 869-line handbook into an honest ledger, and demoting the entire GPU layer (shim, kernels, Metal upscaler, and all) to an optional, unconnected, still-shipped side path that survives to this day as "Thread - CUDA to Metal Shim" in the very CMake file that no longer needs it.</p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -154,24 +154,25 @@
 <p>Thread consists of:</p>
 <ul>
 <li><strong>Local CPU Processing</strong>: Image tiling and stitching using C/C++ with OpenCV or stb_image</li>
-<li><strong>GPU Acceleration</strong>: CUDA (Linux/Windows) or Metal (macOS) for upscaling operations</li>
+<li><strong>GPU Acceleration (Experimental)</strong>: Metal: Experimental. The Metal shim compiles but does not dispatch to GPU. It exists for reference. The API always uses CPU upscaling.</li>
+<li>CUDA: Experimental. CUDA kernels work in the standalone CLI (src/cli/e2e.py) if built with USE_CUDA=ON. The API does not call them; it uses CPU fallback.</li>
 <li><strong>Python Orchestration</strong>: Pipeline coordination and testing</li>
 </ul>
 <h4 id="3-development-workflow">3. Development Workflow</h4>
 <ol>
 <li>Fork and clone the repository</li>
 <li>Create a feature branch from <code>main</code></li>
-<li>Implement changes following the <a href="../README.md#git-commit-standards">commit standards</a></li>
+<li>See CONTRIBUTING.md for code style and commit conventions.</li>
 <li>Run the full test suite (<code>./scripts/run.sh</code>)</li>
 <li>Open a pull request with a clear description</li>
 </ol>
 <h4 id="4-important-files">4. Important Files</h4>
 <ul>
 <li><code>CMakeLists.txt</code>: Build configuration</li>
-<li><code>src/preprocess.c</code>: CPU image preprocessing</li>
-<li><code>cloud_gpu/upscale.cu</code>: CUDA upscaling</li>
-<li><code>src/metal/Upscale.metal</code>: Metal shader implementation</li>
-<li><code>scripts/e2e.py</code>: End-to-end testing logic</li>
+<li><code>src/core/preprocess.c</code>: CPU image preprocessing</li>
+<li><code>src/gpu/cuda/upscale.cu</code>: CUDA upscaling</li>
+<li><code>src/gpu/metal/Upscale.metal</code>: Metal shader implementation</li>
+<li><code>src/cli/e2e.py</code>: End-to-end testing logic</li>
 </ul>
 <h4 id="5-testing-requirements">5. Testing Requirements</h4>
 <p>All changes must pass:</p>
@@ -197,45 +198,51 @@
 <table>
 <thead>
 <tr>
-<th>Platform</th>
-<th>Architecture</th>
-<th>GPU Support</th>
+<th>Component</th>
 <th>Status</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>macOS 11.0+</td>
-<td>x86_64, ARM64</td>
+<td>Python API</td>
+<td>Active</td>
+<td>Flask, port 5001, CPU upscaling via cv2</td>
+</tr>
+<tr>
+<td>C tiler</td>
+<td>Active</td>
+<td>Always built, used by CLI; API uses cv2 instead</td>
+</tr>
+<tr>
+<td>Tiling</td>
+<td>Active</td>
+<td>cv2.resize in Python, no subprocess</td>
+</tr>
+<tr>
 <td>Metal</td>
-<td>Active</td>
+<td>Experimental</td>
+<td>Code exists (src/gpu/metal/), does not execute in API; CLI only</td>
 </tr>
 <tr>
-<td>Ubuntu 20.04+</td>
-<td>x86_64</td>
-<td>CUDA 11.8+</td>
-<td>Active</td>
-</tr>
-<tr>
-<td>Windows 10+</td>
-<td>x86_64</td>
-<td>CUDA 11.8+</td>
-<td>Active</td>
+<td>CUDA</td>
+<td>Experimental</td>
+<td>Code exists (src/gpu/cuda/), works in CLI; API uses CPU fallback</td>
 </tr>
 </tbody>
 </table>
 <h3 id="language-versions">Language Versions</h3>
 <ul>
-<li>C/C++: C17 / C++20</li>
-<li>CUDA: 11.8+</li>
-<li>Metal: macOS 11.0+</li>
+<li>C/C++: C++20 (C tiler uses the compiler default C standard)</li>
+<li>CUDA: 12.0+ (experimental)</li>
+<li>Metal: 3.0+ on macOS 11+ (experimental)</li>
 <li>Python: 3.10+</li>
 </ul>
 <h3 id="dependencies">Dependencies</h3>
 <h4 id="required">Required</h4>
 <ul>
 <li>CMake 3.10+</li>
-<li>CUDA Toolkit 11.8+ (for GPU builds)</li>
+<li>CUDA Toolkit 12.0+ (for experimental GPU builds)</li>
 <li>OpenCV 4.x (optional; stb_image is the fallback)</li>
 </ul>
 <h4 id="optional">Optional</h4>
@@ -258,7 +265,7 @@
 </ul>
 <h4 id="gpu-compatibility">GPU Compatibility</h4>
 <ul>
-<li>CUDA: NVIDIA GPUs supporting CUDA 11.8+</li>
+<li>CUDA: NVIDIA GPUs supporting CUDA 12.0+ (enforced by CMake; requires USE_CUDA=ON)</li>
 <li>Metal: Apple Silicon and Intel-based macOS 11.0+ hardware</li>
 </ul>
 <h3 id="breaking-changes-policy">Breaking Changes Policy</h3>
