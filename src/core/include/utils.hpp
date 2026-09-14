@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 #pragma once
 #include <opencv2/opencv.hpp>
 #include <vector>

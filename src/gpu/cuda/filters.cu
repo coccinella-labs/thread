@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 /**
  * Additional CUDA Image Filters
  *

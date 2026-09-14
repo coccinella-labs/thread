@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include "utils.hpp"
 #include <cassert>
 #include <iostream>

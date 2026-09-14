@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include "upscaler.hpp"
 
 // Forward declarations

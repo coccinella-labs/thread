@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 /**
  * CUDA Image Resizing (Downscaling)
  * Downscales images using bilinear interpolation.

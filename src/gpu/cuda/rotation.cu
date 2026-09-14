@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 /**
  * CUDA Image Rotation
  * Rotates images by a given angle using bilinear interpolation.

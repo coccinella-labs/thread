@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include "utils.hpp" // Helper functions
 #include <exception>
 #include <filesystem>

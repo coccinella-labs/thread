@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 #ifdef _WIN32
 #define _CRT_SECURE_NO_WARNINGS
 #include <direct.h>
