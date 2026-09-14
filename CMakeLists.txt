@@ -190,7 +190,8 @@ if(USE_CUDA)
     set(CUDA_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_cudart_static_LIBRARY}
                        ${CUDA_cudadevrt_LIBRARY})
 
-    file(GLOB_RECURSE CUDA_SOURCES "src/gpu/cuda/*.cu")
+    file(GLOB_RECURSE CUDA_SOURCES CONFIGURE_DEPENDS "src/gpu/cuda/*.cu")
+    list(FILTER CUDA_SOURCES EXCLUDE REGEX "test_shim\\.cu$")
 
     add_library(cuda_objects OBJECT ${CUDA_SOURCES})
     target_include_directories(cuda_objects PRIVATE ${CMAKE_SOURCE_DIR}/src/core/include)

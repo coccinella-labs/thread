@@ -386,8 +386,11 @@ jobs:
       - name: Run tests
         run: |
           cd build
-          # Run tests with limited parallelism
-          ctest --output-on-failure --timeout 300 --parallel 2
+          # Run tests with limited parallelism. user_counters_tabular_test is a
+          # Google Benchmark self-test whose CV regex expects a real clock rate;
+          # macOS runners lack sysctl hw.cpufrequency, so it prints "nan %" and
+          # fails its own output check. Skipped here (passes on Linux CI).
+          ctest --output-on-failure --timeout 300 --parallel 2 -E user_counters_tabular_test
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
