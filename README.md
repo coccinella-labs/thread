@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Coccinella-Labs/thread/main/.github/assets/thumbnail.png" alt="thread" width="100%">
+</p>
+
 # Thread
 
 Thread is an image tiling and upscaling pipeline. You upload one image, we split it into tiles, upscale each one on the CPU (or GPU if you have it), and stitch them back together. It runs as an HTTP API on your machine at localhost:5001. Nothing goes to the cloud. Your images stay local.
