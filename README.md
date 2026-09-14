@@ -123,13 +123,15 @@ Every response from the API is JSON in HAL format. That means it includes links 
 
 ## How It Works Inside
 
-The Flask server lives in src/api/server.py. It handles all the HTTP routes, validates input, and runs the tiling and upscaling logic. When you ask it to upscale, it uses cv2.INTER_CUBIC on the CPU. That is a bicubic interpolation algorithm. It is fast and good enough for most images.
+The Flask server lives in src/api/server.py. It handles all the HTTP routes and validates input. Everything else runs in-process with OpenCV, on the CPU, with no subprocess calls and no GPU.
 
-The C tiler lives in src/core/preprocess.c. It uses stb_image to load and process images. It handles edge cases when tiles do not divide evenly. This always builds, no dependencies needed.
+The Flask API does all tiling itself. It uses OpenCV to split the image into tiles (cv2 code at line 210) and to upscale each tile with bicubic interpolation (line 205). It is all Python, in-process, no subprocess calls.
+
+There is a separate C tiler in src/core/preprocess.c that uses stb_image instead. It has no dependencies and is always built and tested. But the API does not call it. Only the CLI (src/cli/e2e.py) and the dev flow (scripts/run.sh) invoke the C tiler. So it exists for reference and for the CLI, not for the API.
 
 There is also a C++ tiler in src/core/preprocess.cpp that uses OpenCV instead. If you pass WITH_OPENCV=ON to CMake, it will build that version too. But it has a bug in the edge handling, so the C version is what we use by default.
 
-The src/cli/e2e.py file is a standalone CLI. It creates a test image, tiles it, upscales each tile (using CUDA if you built it, otherwise falling back to cv2), and stitches everything back. It does not use the Flask API. It is a separate tool to test the full pipeline end to end.
+The src/cli/e2e.py file is a standalone CLI. It creates a test image, tiles it with the C binary (build/bin/preprocess_c), upscales each tile (using the CUDA binary if you built it with USE_CUDA=ON, otherwise falling back to cv2), and stitches everything back. It does not use the Flask API. It is a separate tool to test the full pipeline end to end. This is why we always build preprocess_c even though the API does not use it.
 
 ## What Actually Works
 
