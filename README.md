@@ -151,6 +151,8 @@ CUDA on Linux and Windows: The CUDA kernels compile. The standalone e2e.py scrip
 
 If you want to know why GPU support is incomplete, read docs/RECONSTRUCTION.md. That file explains the design history and why things are the way they are.
 
+The GPU factory abstraction from the original design still exists in src/core/upscaler.cpp, src/core/test_upscaler.cpp, and src/core/include/upscaler.hpp. None of it is compiled or called. It is preserved as a reference point for anyone who wants to understand the intended GPU integration or try to finish it.
+
 ## Building with Optional Features
 
 You can turn on OpenCV if you want to use the C++ tiler.

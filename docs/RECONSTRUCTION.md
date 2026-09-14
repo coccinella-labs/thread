@@ -10,7 +10,7 @@
 
 The repository was imported as **`hybrid-compute`** on **2025-10-04** (`cd81c9d` *"update hybrid-compute: upscaling, gpu, tests"*) and spent six months as a GPU-acceleration project before being reframed as **`thread`**, a CPU-first image pipeline, on **2026-05-28** (`f375435`, the MVP cut).
 
-The project name described its ambition: *hybrid* compute, the same CUDA-style source running on NVIDIA GPUs (Linux/Windows) *and* Apple Silicon via a Metal back-end. The pre-cut `docs/PROJECT_README.md` (an earlier design document, since removed; preserved in git history) states it explicitly:
+The project name described its ambition: *hybrid* compute, the same CUDA-style source running on NVIDIA GPUs (Linux/Windows) *and* Apple Silicon via a Metal back-end. The pre-cut `docs/PROJECT_README.md` states it explicitly:
 
 > *"Hybrid-compute is a cross-platform GPU-accelerated image processing framework with a CUDA-to-Metal compatibility shim. It enables CUDA-based operations on macOS (Apple Silicon) via Metal."*
 
@@ -86,7 +86,7 @@ What it changed:
 - **Hardened validation**: `parse_positive_int`, `MAX_PAGE_LIMIT=100`, `is_safe_id` on every resource, `secure_filename` on outputs (later `033e6b1`/`784b044` closed the `image_id` path-traversal hole).
 - **Renamed the project** `hybrid-compute` → `thread` at every level: `project()` in CMake, `com.hybridcompute.metalshim` → `com.thread.metalshim` dispatch-queue label in `src/metal/MetalShim.mm` (the *only* core-source change in the entire cut), folder defaults `/tmp/hybrid-compute/*` → `/tmp/thread/*` in the server.
 - **Downgraded the version** from `1.0.0` to `0.1.0` (`VERSION` file): an honest "this is once again an MVP" signal. The CMake project *description* string stayed "…CUDA to Metal Shim" (residue).
-- **Quieted the documentation**: the 869-line "Hybrid Compute API Design Guide" README and marketing `docs/web/*.html` were replaced with the terse "a small, well-lit room" README and the "What Works Now" honesty ledger. The earlier design document (`docs/PROJECT_README.md`, since removed) was rewritten from "cross-platform GPU-accelerated framework" to "Thread is a small image processing project. … The CPU path is the default path."
+- **Quieted the documentation**: the 869-line "Hybrid Compute API Design Guide" README and marketing `docs/web/*.html` were replaced with the terse "a small, well-lit room" README and the "What Works Now" honesty ledger. `docs/PROJECT_README.md` was rewritten from "cross-platform GPU-accelerated framework" to "Thread is a small image processing project. … The CPU path is the default path."
 - **Only two files were *added* in the whole commit**: `.github/thread-flow.png` (the stitch identity) and `tests/test_api_server.py` (the regression suite for the new server).
 
 **Nothing GPU-related was deleted.** `cloud_gpu/`, `src/metal/`, `cuda_shim.h`, `cudart_shim`, and `Upscale.metal` all survived the cut. The cut *decoupled* the API from the GPU layer; it did not remove the layer.
@@ -159,7 +159,7 @@ Two adjacent-commit fingerprints (`64c42e6`+`1c13d45` in the same session; later
 
 ## 12. Evidence vs inference
 
-**Evidence** (verified directly from git and files): all commit messages, dates, and file contents above; the exact `subprocess` command lines and `501/504` handlers in `66c2c67:api/server.py`; the fabricated stitch/job stubs; `MetalUpscaler::upscale()` → CPU; `launchKernel → NotSupported`; `cudart_shim OUTPUT_NAME "cudart"`; the pre/post-cut READMEs and the long-form design doc that once lived at `docs/PROJECT_README.md` (removed; preserved in git history); the three tiler behaviors; `WITH_METAL` defaults; `VERSION` downgrade.
+**Evidence** (verified directly from git and files): all commit messages, dates, and file contents above; the exact `subprocess` command lines and `501/504` handlers in `66c2c67:api/server.py`; the fabricated stitch/job stubs; `MetalUpscaler::upscale()` → CPU; `launchKernel → NotSupported`; `cudart_shim OUTPUT_NAME "cudart"`; the pre/post-cut READMEs and `docs/PROJECT_README.md`; the three tiler behaviors; `WITH_METAL` defaults; `VERSION` downgrade.
 
 **Inference** (flagged in text): that the original API's GPU route was *unrunnable on the author's Mac* (§8), supported by build gating (`USE_CUDA=OFF` default, no CUDA on Apple Silicon) but not by direct observation of a failed run; that the 202/job API was modeled on the remote cloud workflow (§5); that the shim's kernel layer was abandoned rather than deferred by plan (§4); AI-assisted author style (§11).
 

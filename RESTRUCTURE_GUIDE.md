@@ -179,7 +179,7 @@ left alone.
 
 - `README.md` structure table now shows `src/api/`, `src/cli/`, `src/core/`,
   `src/gpu/`, `scripts/` and their purposes; run commands use new paths.
-- `docs/ONBOARDING.md`, `docs/CI.md`,
+- `docs/PROJECT_README.md`, `docs/ONBOARDING.md`, `docs/CI.md`,
   `docs/TESTING.md`, `docs/TROUBLESHOOTING.md`, `docs/web/*.html` updated.
 - `docs/TESTING.md` and `docs/web/testing.html` no longer describe
   `tests/unit/` / `tests/performance/`; tests are co-located beside code.
