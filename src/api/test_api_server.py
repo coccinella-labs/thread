@@ -14,8 +14,8 @@ def import_test_app(tmp_path: Path, monkeypatch):
     monkeypatch.setenv("UPLOAD_FOLDER", str(tmp_path / "uploads"))
     monkeypatch.setenv("OUTPUT_FOLDER", str(tmp_path / "output"))
 
-    sys.modules.pop("api.server", None)
-    server = importlib.import_module("api.server")
+    sys.modules.pop("src.api.server", None)
+    server = importlib.import_module("src.api.server")
     server.app.config.update(TESTING=True)
     return server.app
 

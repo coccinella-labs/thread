@@ -17,7 +17,7 @@ def test_create_test_image(tmp_path: Path) -> None:
     try:
         os.chdir(tmp_path)
         # Run the script
-        result = subprocess.run([sys.executable, str(original_cwd / "create_test_image.py")], check=True)
+        result = subprocess.run([sys.executable, str(Path(__file__).parent / "create_test_image.py")], check=True)
         assert result.returncode == 0
 
         # Check if test_images/test.jpg was created

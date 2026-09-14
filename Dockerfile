@@ -53,4 +53,4 @@ COPY --from=builder /app/build /app/build
 COPY --from=builder /app/build/bin/preprocess_c /app/preprocess_c
 
 # Default command
-CMD ["python3", "scripts/e2e.py"]
+CMD ["python3", "src/cli/e2e.py"]

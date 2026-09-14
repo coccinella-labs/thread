@@ -98,7 +98,7 @@ for i in {0..15}; do
 done
 
 # Stitch tiles with flexible parameters
-"$PYTHON_BIN" scripts/stitch.py test_images/upscaled test_images/final_output.jpg --rows 4 --cols 4 --pattern "tile_*.jpg"
+"$PYTHON_BIN" src/cli/stitch.py test_images/upscaled test_images/final_output.jpg --rows 4 --cols 4 --pattern "tile_*.jpg"
 
 # Verify output
 if [ -f test_images/final_output.jpg ]; then

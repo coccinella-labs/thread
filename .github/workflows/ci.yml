@@ -188,8 +188,8 @@ jobs:
 
       - name: Test Python scripts
         run: |
-          python create_test_image.py
-          python scripts/stitch.py --help || true  # Test script execution
+          python src/cli/create_test_image.py
+          python src/cli/stitch.py --help || true  # Test script execution
 
   # ────────────────────────────── Build & Test ──────────────────────────────
   test-and-build:
@@ -333,7 +333,7 @@ jobs:
           cmake --build . -- -j2 VERBOSE=1
 
       - name: Run E2E tests
-        run: python scripts/e2e.py
+        run: python src/cli/e2e.py
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
@@ -634,7 +634,7 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           mkdir -p test_images
-          python3 create_test_image.py
+          python3 src/cli/create_test_image.py
           cp test_images/test.jpg test_images/input.jpg
 
            GPU="${{ matrix.cuda-version != '' && 'true' || 'false' }}"

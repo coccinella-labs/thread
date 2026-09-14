@@ -11,7 +11,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import stitch module dynamically
-stitch_module = importlib.import_module("scripts.stitch")
+stitch_module = importlib.import_module("src.cli.stitch")
 stitch_tiles = stitch_module.stitch_tiles
 
 
