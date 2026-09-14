@@ -27,10 +27,8 @@ jobs:
       - name: Copy signed.json to cla-signers.json
         run: |
           cp signed.json cla-signers.json
-          cp signed.json cla-bot/cla-signers.json
 
       - name: Run CLA bot
         uses: ./cla-bot/
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          signed.json: ${{ secrets.CLA_SIGNED_JSON }}
