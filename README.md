@@ -123,7 +123,22 @@ Download the final output.
 curl http://localhost:5001/v1/outputs/stitched.png --output stitched.png
 ```
 
-Every response from the API is JSON in HAL format. That means it includes links to related resources and embedded data. Errors come back as a simple object with a code, a title, and details.
+Every response from the API is JSON in HAL format. It includes links to related resources and, where useful, embedded data:
+
+```json
+{
+  "_links": { "self": { "href": "/v1/images/<image_id>" } },
+  "_embedded": { "tiles": [ ... ] },
+  "id": "<image_id>",
+  "created_at": "2026-..."
+}
+```
+
+Errors come back in a fixed shape:
+
+```json
+{ "errors": [{ "code": "not_found", "title": "Not Found", "details": "..." }] }
+```
 
 ## How It Works Inside
 
