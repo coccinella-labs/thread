@@ -2,7 +2,7 @@
 
 Release notes live on GitHub Releases:
 
-https://github.com/bniladridas/thread/releases
+https://github.com/coccinella-labs/thread/releases
 
 This file is only a pointer.
 

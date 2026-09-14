@@ -38,7 +38,7 @@ line-ending = "auto"
 version = { file = "VERSION" }
 
 [tool.coverage.run]
-omit = ["src/cli/e2e.py", "src/cli/create_test_image.py", "config.py", "config-3.py"]
+omit = ["src/cli/e2e.py", "src/cli/create_test_image.py"]
 
 [tool.coverage.report]
 exclude_lines = [
